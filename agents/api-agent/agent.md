@@ -103,21 +103,54 @@ Execute the in-loop self-correction cycle before handoff:
 2. **Barrel Verification:** Ensure `types/index.ts` and `hooks/index.ts` re-export all generated modules.
 3. **Contract Match:** Verify endpoints, query keys, and methods strictly match Swagger.
 
-End with this block:
+---
+
+## 💡 Real-World Example & Usage Flow
+
+### 1. User Input
+The user provides an OpenAPI endpoint or Swagger URL:
+
+```markdown
+Swagger Doc: https://uat.futureonesports.com/api/docs-json
+Endpoint: GET /mobile/players/{playerId}/profile
+Prompt: "Create the API service, TypeScript types, and React Query hook for fetching player profile data."
+```
+
+### 2. API Agent Execution
+1. **Discovers Schema**: Extracts parameters (`playerId: string`), headers (`Authorization: Bearer`), and 200 OK response shape.
+2. **Checks for Code Reuse**: Searches `src/api/endPoints.ts` and `src/hooks/queries/` to ensure no duplicates exist.
+3. **Generates Pure TypeScript Types**:
+   - Creates `src/types/playerProfile.types.ts` (zero imports, clean types).
+   - Re-exports in `src/types/index.ts`.
+4. **Registers Endpoint & API Fetcher**:
+   - Adds `PLAYER_PROFILE: 'mobile/players/:playerId/profile'` to `src/api/endPoints.ts`.
+   - Creates `src/api/playerProfile.api.ts` using `apiRequest` from `api/apiClient`.
+5. **Generates TanStack Query Hook**:
+   - Creates `src/hooks/queries/usePlayerProfileQuery.ts` with typed query key factory.
+   - Re-exports in `src/hooks/index.ts`.
+6. **Compiles & Verifies**: Runs `npx tsc --noEmit` and static validator.
+
+### 3. Output Contract
 
 ```markdown
 ## API Handoff
-status: created | reused | none
-endpoint: <path>
-method: GET | POST | PUT | PATCH | DELETE
-skipAuth: true | false
-paging: page/limit | skip/limit | none
+status: created
+endpoint: mobile/players/:playerId/profile
+method: GET
+skipAuth: false
+paging: none
 files:
-  - <path>
-hook: <hookName> | none
-queryKeys: <exported keys> | none
-itemType: <type> | none
+  - src/api/endPoints.ts
+  - src/types/playerProfile.types.ts
+  - src/types/index.ts
+  - src/api/playerProfile.api.ts
+  - src/hooks/queries/usePlayerProfileQuery.ts
+  - src/hooks/index.ts
+hook: usePlayerProfileQuery
+queryKeys: playerProfileKeys
+itemType: PlayerProfileResponse
 unmatchedSwagger: []
-blockedOn: <missing swagger | none>
-notes: <reuse details, UI-first gaps, or empty>
+blockedOn: none
+notes: "All modules strictly typed and re-exported in barrel files. Ready for integration."
 ```
+

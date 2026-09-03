@@ -118,6 +118,58 @@ node ui-agent/ui-agent.js scaffold component RatingBadge
 | `use{Screen}Screen.ts` Hook | ❌ | ❌ | ✅ **Owner** |
 | Data Wiring & Error Handling | ❌ | ❌ | ✅ **Owner** |
 
+## 💡 Real-World Example & Walkthrough
+
+### Scenario: Building a Player Profile Screen from Figma
+
+#### Step 1: User Input
+The engineer or product manager provides a Figma frame or screenshot:
+
+```markdown
+Figma URL: https://www.figma.com/design/AbCdEf12345/SportsApp?node-id=204-189
+Requirement: "Scaffold the PlayerProfileScreen. Needs header with avatar, name, rank badge, 
+stats card (win rate, total games), and recent matches list. Use Gluestack UI and tokens."
+```
+
+#### Step 2: UI Agent Workflow
+1. Inspects the Figma design node to extract layout hierarchy, padding, typography, and color tokens.
+2. Translates layout to Gluestack primitives:
+   - Screen Container → `<VStack flex={1} bg="$backgroundDark950">`
+   - Header & Stats → `<HStack justifyContent="space-between">`
+3. Extracts all hardcoded strings into `src/constant/strings/playerProfile.strings.ts`.
+4. Maps colors to `@theme/color.ts` tokens (`COLORS.primary`, `COLORS.surfaceCard`).
+5. Generates the screen-local ViewModel interface in `types.ts`.
+6. Executes `npx tsc --noEmit` and the built-in validator:
+   ```bash
+   node agents/ui-agent/ui-agent.js validate ./src/screens/Main/PlayerProfileScreen
+   ```
+
+#### Step 3: Generated UI Handoff Contract
+The agent presents the created files and returns the contract for the next agent:
+
+```markdown
+## UI Handoff
+status: created
+screenFile: src/screens/Main/PlayerProfileScreen/PlayerProfileScreen.tsx
+viewModel: |
+  export interface PlayerProfileProps {
+    player: { id: string; name: string; avatarUrl: string; rank: string };
+    stats: { winRate: number; totalGames: number; mvpCount: number };
+    recentMatches: Array<{ id: string; opponent: string; score: string; isWin: boolean }>;
+  }
+requiredApiData:
+  - GET /mobile/players/:playerId/profile
+  - GET /mobile/players/:playerId/matches
+components:
+  - src/screens/Main/PlayerProfileScreen/Components/StatsCard.tsx
+  - src/screens/Main/PlayerProfileScreen/Components/MatchHistoryItem.tsx
+stringsModule: STRINGS.PLAYER_PROFILE
+figmaFieldsWithoutApi: []
+placeholders: none
+navigationChanged: true
+notes: "All components tokenized. Ready for API agent integration."
+```
+
 ---
 
 ## 🛠️ Exporting as a Standalone Git Repository
@@ -125,10 +177,11 @@ node ui-agent/ui-agent.js scaffold component RatingBadge
 This `ui-agent` directory is completely self-contained. To publish it as a standalone repository:
 
 ```bash
-cd ui-agent
+cd agents/ui-agent
 git init
 git add .
 git commit -m "feat: initial ui-agent release"
 git remote add origin <YOUR_GIT_REPO_URL>
 git push -u origin main
 ```
+

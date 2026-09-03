@@ -75,20 +75,47 @@ node security-agent/security-agent-ai.js ./src --interactive
 
 ---
 
-## 📋 Security Handoff Contract
+## 💡 Real-World Example & Usage Flow
+
+### 1. User Input
+The user requests a security review or invokes the security agent:
+
+```markdown
+Prompt: "Audit our authentication service and navigation files for security issues. 
+Ensure tokens are stored securely and deep links cannot bypass auth."
+```
+
+### 2. Security Agent Execution
+1. **Runs Static Security Analysis**:
+   ```bash
+   node agents/security-agent/security-agent-ai.js ./src/services ./src/navigation
+   ```
+2. **Detects Findings & Prioritizes**:
+   - `[CRITICAL] SEC-002`: JWT access token saved via `AsyncStorage.setItem('token', ...)` in `src/services/authService.ts`.
+   - `[HIGH] NET-001`: Insecure endpoint `http://api.mysports.com` in `src/configs/baseURL.ts`.
+   - `[MEDIUM] NAV-001`: Deep link handler `sportsapp://payment` navigates directly without checking auth state.
+3. **Applies Auto-Fixes & Recommendations**:
+   - Upgrades `AsyncStorage` to `react-native-keychain` (`setGenericPassword` / `getGenericPassword`).
+   - Fixes URL protocol to `https://`.
+   - Adds auth guard check before processing sensitive deep links.
+
+### 3. Output Contract
 
 ```markdown
 ## Security Handoff
-status: passed | remediated | findings_remaining
-targetScanned: <path>
+status: remediated
+targetScanned: src/services, src/navigation
 findings:
-  critical: <count>
-  high: <count>
-  medium: <count>
-  low: <count>
+  critical: 1 (remediated)
+  high: 1 (remediated)
+  medium: 1 (remediated)
+  low: 0
 remediatedFiles:
-  - <path>
+  - src/services/authService.ts (migrated to Keychain)
+  - src/configs/baseURL.ts (enforced HTTPS)
+  - src/navigation/linking.ts (added route auth guard)
 complianceFrameworks:
-  - OWASP-MASVS
-notes: <summary of security posture and manual review items>
+  - OWASP-MASVS (MASVS-STORAGE-1, MASVS-NETWORK-1, MASVS-AUTH-1)
+notes: "Zero remaining critical/high vulnerabilities. Verified with clean scan re-run."
 ```
+

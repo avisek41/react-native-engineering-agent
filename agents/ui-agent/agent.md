@@ -78,7 +78,6 @@ Before concluding the UI task, complete the 3-step verification:
 ┌──────────────────┐       ┌────────────────────────┐       ┌────────────────────────┐
 │ 1. Token & Icon  │ ────▶ │ 2. TypeScript Compiler │ ────▶ │ 3. Emit UI Handoff     │
 │    Validation    │       │    Gate (`tsc`)        │       │    Contract            │
-└──────────────────┘       └────────────────────────┘       └────────────────────────┘
 ```
 
 1. **Token Invariant Check**:
@@ -87,22 +86,58 @@ Before concluding the UI task, complete the 3-step verification:
    - Icons verified in `lucide-react-native`.
 2. **Compiler Gate**:
    - Run `npx tsc --noEmit` and resolve all TypeScript diagnostics.
-3. **Generate UI Handoff Block**:
+3. **Generate UI Handoff Block**.
+
+---
+
+## 💡 Real-World Example & Usage Flow
+
+### 1. User Input
+The user triggers the UI Agent with a Figma URL or screenshots:
+
+```markdown
+Figma URL: https://www.figma.com/design/AbCdEf12345/SportsApp?node-id=204-189
+Prompt: "Create the Player Profile screen. It has a header with avatar, name, rank badge, 
+a stats card (win rate, total games), and a list of recent matches. Ensure full tokenization."
+```
+
+### 2. UI Agent Execution
+1. **Parses Figma Layout**: Translates vertical container into `<VStack>`, cards into `<CardContainer>`, and layout rows into `<HStack>`.
+2. **Tokenizes Values**:
+   - `#1E1E2E` → `COLORS.backgroundPrimary`
+   - Spacing `16px` → `Spacing.medium`
+   - Strings ("Recent Matches", "Win Rate") → `STRINGS.PLAYER_PROFILE.*`
+3. **Generates Modular Files**:
+   - `src/screens/Main/PlayerProfileScreen/PlayerProfileScreen.tsx`
+   - `src/screens/Main/PlayerProfileScreen/Components/StatsCard.tsx`
+   - `src/screens/Main/PlayerProfileScreen/Components/MatchHistoryItem.tsx`
+   - `src/screens/Main/PlayerProfileScreen/types.ts` (View-Model contract)
+   - `src/constant/strings/playerProfile.strings.ts`
+4. **Validates & Emits UI Handoff**.
+
+### 3. Output Contract
 
 ```markdown
 ## UI Handoff
-status: created | updated | reused
-screenFile: <path>
-viewModel: <types / prop list the Integration Agent must satisfy>
+status: created
+screenFile: src/screens/Main/PlayerProfileScreen/PlayerProfileScreen.tsx
+viewModel: |
+  export interface PlayerProfileViewModel {
+    player: { id: string; name: string; avatarUrl: string; rank: string };
+    stats: { winRate: number; totalGames: number; mvpCount: number };
+    recentMatches: Array<{ id: string; opponent: string; score: string; isWin: boolean }>;
+  }
 requiredApiData:
-  - <resource/fields the API must eventually provide>
+  - GET /mobile/players/:playerId/profile
+  - GET /mobile/players/:playerId/matches
 components:
-  - <path>
-stringsModule: STRINGS.<KEY>
-figmaFieldsWithoutApi:
-  - <field or empty>
-placeholders: <mock list / empty list / local flags / none>
-navigationChanged: true | false
-existingScreenHook: <path> | none
-notes: <existing data flow preserved, UI-first, or needs wiring>
+  - src/screens/Main/PlayerProfileScreen/Components/StatsCard.tsx
+  - src/screens/Main/PlayerProfileScreen/Components/MatchHistoryItem.tsx
+stringsModule: STRINGS.PLAYER_PROFILE
+figmaFieldsWithoutApi: []
+placeholders: none
+navigationChanged: true
+existingScreenHook: none
+notes: "Pure presentational layer scaffolded with Gluestack UI. Zero API coupling."
 ```
+

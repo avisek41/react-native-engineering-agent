@@ -242,6 +242,49 @@ npm run security:agent:fix
 npm run security:agent:interactive
 ```
 
+---
+
+## 💡 Real-World Example & Walkthrough
+
+### Scenario: Auditing Auth Services & Deep Links
+
+#### Step 1: User Input / CI Trigger
+```markdown
+Command: node agents/security-agent/security-agent-ai.js ./src/services ./src/navigation
+Requirement: "Check for unencrypted token storage, plain-text network URLs, and unguarded deep links."
+```
+
+#### Step 2: Agent Execution & Triage
+1. Evaluates all universal core rules and navigation/services domain rules.
+2. Identifies vulnerabilities:
+   - **SEC-002 (Critical):** `AsyncStorage.setItem('access_token', token)` in `authService.ts`.
+   - **NET-001 (High):** `http://api.staging.mysports.com` in `configs/baseURL.ts`.
+   - **NAV-001 (Medium):** Unvalidated deep link redirection in `navigation/linking.ts`.
+3. Filters false positives (e.g. non-sensitive storage keys like `theme_preference` or test mock tokens).
+4. Generates HTML & Markdown triage report.
+
+#### Step 3: Automated Fix & Handoff Contract
+```markdown
+## Security Handoff
+status: remediated
+targetScanned: src/services, src/navigation
+findings:
+  critical: 1 (remediated)
+  high: 1 (remediated)
+  medium: 1 (remediated)
+  low: 0
+remediatedFiles:
+  - src/services/authService.ts (switched to react-native-keychain)
+  - src/configs/baseURL.ts (enforced HTTPS)
+  - src/navigation/linking.ts (added auth session verification)
+complianceFrameworks:
+  - OWASP-MASVS
+notes: "All high/critical items resolved. Passed regression scan."
+```
+
+---
+
+
 ### CLI Usage
 
 ```bash

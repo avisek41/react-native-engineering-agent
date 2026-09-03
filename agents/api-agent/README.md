@@ -105,28 +105,64 @@ node api-agent/api-agent.js scaffold mutation --name=authLogin --endpoint=/auth/
 
 ---
 
-## 📋 API Handoff Contract
+## 💡 Real-World Example & Walkthrough
 
-Every API Agent task concludes with an **API Handoff** block:
+### Scenario: Adding Player Profile Query from Swagger
 
+#### Step 1: User Input
+```markdown
+Swagger Doc: https://uat.futureonesports.com/api/docs-json
+Operation: GET /mobile/players/{playerId}/profile
+Requirement: "Generate the API request, TypeScript types, and React Query hook for the player profile endpoint."
+```
+
+#### Step 2: API Agent Execution
+1. Extracts parameters (`playerId`), authorization mode (`Bearer`), and payload shape from Swagger JSON.
+2. Checks existing codebase to ensure endpoint isn't already declared.
+3. Generates zero-import types in `src/types/playerProfile.types.ts`:
+   ```typescript
+   export interface PlayerProfileResponse {
+     id: string;
+     username: string;
+     email: string;
+     rank: string;
+     stats: { gamesPlayed: number; wins: number };
+   }
+   ```
+4. Registers endpoint in `src/api/endPoints.ts`:
+   ```typescript
+   export const ENDPOINTS = {
+     // ...
+     PLAYER_PROFILE: 'mobile/players/:playerId/profile',
+   } as const;
+   ```
+5. Creates API function in `src/api/playerProfile.api.ts` and TanStack Query hook in `src/hooks/queries/usePlayerProfileQuery.ts`.
+6. Re-exports in barrels (`src/types/index.ts` and `src/hooks/index.ts`).
+7. Executes static validation:
+   ```bash
+   node agents/api-agent/api-agent.js validate ./src/api
+   ```
+
+#### Step 3: Generated API Handoff Contract
 ```markdown
 ## API Handoff
-status: created | reused | none
-endpoint: mobile/programs/:programId/teams
+status: created
+endpoint: mobile/players/:playerId/profile
 method: GET
 skipAuth: false
-paging: page/limit
+paging: none
 files:
   - src/api/endPoints.ts
-  - src/types/programTeams.types.ts
+  - src/types/playerProfile.types.ts
   - src/types/index.ts
-  - src/api/programTeams.api.ts
-  - src/hooks/queries/useProgramTeamsInfiniteQuery.ts
+  - src/api/playerProfile.api.ts
+  - src/hooks/queries/usePlayerProfileQuery.ts
   - src/hooks/index.ts
-hook: useProgramTeamsInfiniteQuery
-queryKeys: programTeamsKeys
-itemType: ProgramTeamsItem
+hook: usePlayerProfileQuery
+queryKeys: playerProfileKeys
+itemType: PlayerProfileResponse
 unmatchedSwagger: []
 blockedOn: none
-notes: "Reused existing types where applicable; added new infinite query hook."
+notes: "Zero-import types generated. Query key factory and hook ready for use."
 ```
+
