@@ -1,0 +1,69 @@
+---
+description: Prefer Gluestack UI components. Use design tokens for RN primitives. Always order imports — external first, then internal, long to short.
+globs: **/*.tsx,**/*.ts
+alwaysApply: true
+---
+
+# UI Component Standards
+
+## 1. Prefer Gluestack UI
+
+Always reach for Gluestack UI before React Native primitives.
+
+```tsx
+// ❌ BAD
+import { View, TouchableOpacity } from 'react-native';
+
+// ✅ GOOD
+import { Box, Pressable, HStack, VStack } from '@gluestack-ui/themed';
+```
+
+| React Native | Gluestack Equivalent |
+|---|---|
+| `View` | `Box` / `VStack` / `HStack` |
+| `TouchableOpacity` / `Pressable` | `Pressable` |
+| `ScrollView` | `ScrollView` from gluestack |
+| `FlatList` | `FlatList` from gluestack or `LegendList` |
+
+## 2. Design Tokens for React Native Primitives
+
+When a React Native primitive is necessary (e.g. `Text`, `LegendList`, `StyleSheet`), all numeric values **must** come from design tokens — never magic numbers.
+
+```ts
+import { Spacing, FontSize, Radius, Layout, Shape, BorderWidth } from 'constant';
+import { COLORS, FONT_FAMILY } from '@theme';
+```
+
+```tsx
+// ❌ BAD
+style={{ padding: 16, fontSize: 14, borderRadius: 8, color: '#fff' }}
+
+// ✅ GOOD
+style={{
+  padding: Spacing.lg,
+  fontSize: FontSize.sm,
+  borderRadius: Shape.card,
+  color: COLORS.WHITE,
+}}
+```
+
+## 3. Import Order
+
+Group imports in this order, separated by a blank line:
+1. **External** packages — comment `// external`
+2. **Internal** project files — comment `// internal`
+
+Within each group, sort from **longest import path to shortest**.
+
+```tsx
+// external
+import { StyleSheet, Text } from 'react-native';
+import { Box, HStack, VStack } from '@gluestack-ui/themed';
+import { ChevronRight } from 'lucide-react-native';
+import React from 'react';
+
+// internal
+import { CardContainer, Chip } from 'components';
+import { COLORS, FONT_FAMILY } from '@theme';
+import { FontSize, Layout, Shape, Spacing, STRINGS } from 'constant';
+```

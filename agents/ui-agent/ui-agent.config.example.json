@@ -1,0 +1,26 @@
+{
+  "appName": "futureonesports",
+  "srcRoot": "./src",
+  "screensDir": "./src/screens",
+  "componentsDir": "./src/components",
+  "tokens": {
+    "colorPath": "./src/theme/color.ts",
+    "fontPath": "./src/theme/fonts.ts",
+    "designTokenPath": "./src/constant/designToken.ts",
+    "stringsPath": "./src/constant/strings"
+  },
+  "rules": {
+    "noHardcodedHex": "error",
+    "noHardcodedStrings": "warn",
+    "preferGluestack": "warn",
+    "enforceTestID": "error",
+    "forbidApiInScreens": "error",
+    "enforceLegendList": "warn"
+  },
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__mocks__/**",
+    "**/node_modules/**"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "name": "api-agent",
+  "version": "1.0.0",
+  "description": "API Implementation Specialist & Static Validator Agent for React Native and TanStack Query",
+  "main": "api-agent.js",
+  "scripts": {
+    "validate": "node api-agent.js validate ./src",
+    "validate:api": "node api-agent.js validate ./src/api",
+    "validate:hooks": "node api-agent.js validate ./src/hooks",
+    "validate:types": "node api-agent.js validate ./src/types",
+    "scaffold:query": "node api-agent.js scaffold query",
+    "scaffold:infinite": "node api-agent.js scaffold infinite",
+    "scaffold:mutation": "node api-agent.js scaffold mutation"
+  },
+  "keywords": [
+    "react-native",
+    "tanstack-query",
+    "react-query",
+    "api-agent",
+    "swagger",
+    "openapi",
+    "typescript",
+    "static-analysis",
+    "cursor-agent"
+  ],
+  "author": "FutureOne Sports",
+  "license": "UNLICENSED"
+}

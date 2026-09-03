@@ -1,0 +1,33 @@
+{
+  "appName": "MyApp",
+  "appType": "sports",
+  "defaultFormat": "html",
+  "defaultSeverity": "all",
+  "excludePaths": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/__mocks__/**"
+  ],
+  "customDomainRules": {
+    "hooks": {
+      "rules": [],
+      "inverseChecks": []
+    }
+  },
+  "suppressions": [
+    {
+      "ruleId": "NET-003",
+      "filePath": "src/services/healthCheck.ts",
+      "_comment": "Health check endpoint intentionally has no timeout for long-poll behavior"
+    },
+    {
+      "ruleId": "LOG-004",
+      "filePath": "src/utils/debug.ts",
+      "_comment": "Debug utility is stripped by babel-plugin-transform-remove-console in production builds"
+    }
+  ],
+  "complianceFrameworks": ["OWASP-MASVS"],
+  "failOn": "critical",
+  "historyDir": "./security-agent-report"
+}

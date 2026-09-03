@@ -1,0 +1,22 @@
+---
+description: Zero hardcoded magic strings, numbers, or hex colors in React Native components.
+globs: src/screens/**/*.tsx,src/components/**/*.tsx
+alwaysApply: true
+---
+
+# No Hardcoded Values Rule
+
+## 1. Strings
+Never put raw user-facing strings directly in JSX:
+- ❌ `<Text>Player Roster</Text>`
+- ✅ `<Text>{STRINGS.ROSTER.TITLE}</Text>`
+
+## 2. Colors
+Never use inline hex codes, RGB strings, or raw color names:
+- ❌ `color: '#1E293B'`, `backgroundColor: 'red'`
+- ✅ `color: COLORS.TEXT_PRIMARY`, `backgroundColor: COLORS.DANGER`
+
+## 3. Spacing & Sizes
+Never use raw numbers for margins, paddings, gaps, font sizes, or border radii:
+- ❌ `padding: 12`, `fontSize: 16`, `gap: 8`, `borderRadius: 10`
+- ✅ `padding: Spacing.md`, `fontSize: FontSize.md`, `gap: Spacing.sm`, `borderRadius: Shape.card`

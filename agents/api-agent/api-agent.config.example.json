@@ -1,0 +1,24 @@
+{
+  "appName": "futureonesports",
+  "srcRoot": "./src",
+  "apiDir": "./src/api",
+  "hooksDir": "./src/hooks",
+  "typesDir": "./src/types",
+  "endpointsFile": "./src/api/endPoints.ts",
+  "rules": {
+    "pureTypes": "error",
+    "enforceBarrelExports": "error",
+    "enforceEndpointsConstant": "error",
+    "enforceQueryKeyFactory": "error",
+    "enforceSelectInInfiniteQuery": "error",
+    "forbidAxiosDirectUsage": "error",
+    "enforceStaleAndGcTime": "warn",
+    "forbidHardcodedHttpMethods": "warn"
+  },
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__mocks__/**",
+    "**/node_modules/**"
+  ]
+}

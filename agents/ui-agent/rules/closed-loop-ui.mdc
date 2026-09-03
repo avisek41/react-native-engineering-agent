@@ -1,0 +1,24 @@
+---
+description: Closed loop verification protocol for UI agent tasks before delivering code.
+globs: src/screens/**/*.tsx,src/components/**/*.tsx
+alwaysApply: true
+---
+
+# Closed-Loop UI Verification Protocol
+
+Before declaring any UI task complete, the UI Agent must execute the following automated verification gates:
+
+## Gate 1: Design System & Token Gate
+- Ensure all color references match keys in `COLORS`.
+- Ensure all typography uses `FONT_FAMILY`.
+- Ensure all spacings use `Spacing` / `FontSize` / `Radius` / `Shape`.
+- Ensure all user-facing strings are exported from `STRINGS`.
+
+## Gate 2: Static Type & Compiler Gate
+- Execute `npx tsc --noEmit`.
+- Verify 0 TypeScript compiler diagnostics across all created or modified files.
+- Resolve any missing prop types, incorrect imports, or JSX structure mismatches.
+
+## Gate 3: Testability & Accessibility Gate
+- Verify container and interactive components have valid `testID`s.
+- Verify icons are imported from `lucide-react-native` and styled with tokens.

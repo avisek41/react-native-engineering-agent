@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Agent — Architecture, Scanning Flow & Parameters</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #0a0c10;
+      --bg-surface: #12151e;
+      --bg-surface-elevated: #181d2a;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.3);
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-violet: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    .ambient-glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1000px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(6, 182, 212, 0.05) 50%, transparent 80%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 0.825rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-emerald);
+      box-shadow: 0 0 8px var(--accent-emerald);
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 750px;
+      margin: 0 auto;
+    }
+
+    /* Metrics Bar */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 4rem;
+    }
+
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-accent);
+    }
+
+    .metric-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Section Headers */
+    .section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    /* Pipeline Step Cards */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 4.5rem;
+    }
+
+    .pipeline-step {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.5rem;
+      position: relative;
+    }
+
+    .pipeline-step::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan));
+    }
+
+    .step-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .step-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Table Styles */
+    .table-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 4.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    thead th {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1.1rem 1.4rem;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    tbody td {
+      padding: 1.2rem 1.4rem;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Custom Column Formatting */
+    .domain-cell {
+      white-space: nowrap;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.95rem;
+    }
+
+    .rule-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      padding: 0.2rem 0.5rem;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 6px;
+      color: #a5b4fc;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .parameters-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .parameters-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .parameters-list li::before {
+      content: '•';
+      color: var(--accent-cyan);
+      font-weight: bold;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      color: #e2e8f0;
+      font-size: 0.82rem;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .pill-green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .pill-red { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+    .pill-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+
+    footer {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 900px) {
+      .table-container { overflow-x: auto; }
+      table { min-width: 800px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-glow"></div>
+
+  <div class="container">
+    
+    <!-- Header -->
+    <header>
+      <div class="badge">
+        <span class="badge-dot"></span>
+        Enterprise Mobile Security
+      </div>
+      <h1>Security Agent Architecture</h1>
+      <p class="subtitle">Deterministic Context-Aware Static Security Analyzer for React Native & Mobile Client Codebases.</p>
+    </header>
+
+    <!-- Top Key Metrics -->
+    <div class="metrics-bar">
+      <div class="metric-card">
+        <div class="metric-value">⚡ 1.9s</div>
+        <div class="metric-label">Full Codebase Scan (538 Files)</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">🔒 100%</div>
+        <div class="metric-label">Offline & Zero Network Egress</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">📦 0</div>
+        <div class="metric-label">New NPM Dependencies Added</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">🎯 10</div>
+        <div class="metric-label">OWASP MASVS Aligned Domains</div>
+      </div>
+    </div>
+
+    <!-- Section 1: How It Scans -->
+    <div class="section-header">
+      <span class="section-tag">Section 01</span>
+      <h2>How It Scans (Scanning Flow & Mechanics)</h2>
+    </div>
+
+    <div class="pipeline-grid">
+      <div class="pipeline-step">
+        <div class="step-number">Phase 01</div>
+        <div class="step-title">Detect & Scope</div>
+        <p class="step-desc">Discovers targets, resolves scan mode (Root, Domain Folder, Single File), and applies universal & domain rule packs across matching source files.</p>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="step-number">Phase 02</div>
+        <div class="step-title">Context Analysis</div>
+        <p class="step-desc">Extracts a ±15 line radius around hits. Applies 8 conservative heuristics to eliminate false positives in <code>__DEV__</code> blocks, comments, and types.</p>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="step-number">Phase 03</div>
+        <div class="step-title">Heuristic Triage</div>
+        <p class="step-desc">Calculates a multi-factor risk score (0-100) based on Severity × Exploitability × Reachability × Impact to produce actionable priority buckets.</p>
+      </div>
+
+      <div class="pipeline-step">
+        <div class="step-number">Phase 04</div>
+        <div class="step-title">Report & Fix</div>
+        <p class="step-desc">Generates developer Markdown reports and machine-readable JSON for CI. Offers deterministic safe auto-fixes with atomic rollback.</p>
+      </div>
+    </div>
+
+    <!-- Section 2: 10 Key Security Domains Table -->
+    <div class="section-header">
+      <span class="section-tag">Section 02</span>
+      <h2>10 Key Security Domains & Parameters Checked (OWASP MASVS Aligned)</h2>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 22%;">Security Domain</th>
+            <th style="width: 14%;">Rule Prefix</th>
+            <th style="width: 44%;">Parameters & Checks Evaluated</th>
+            <th style="width: 20%;">MASVS Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>🔑</span> Secrets & Keys
+              </div>
+            </td>
+            <td><span class="rule-code">SEC-001..008</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Hardcoded API keys, JWT tokens & Bearer headers</li>
+                <li>AWS access credentials (<code>AKIA...</code>) in source code</li>
+                <li>Embedded private keys (<code>-----BEGIN PRIVATE KEY-----</code>)</li>
+                <li>Firebase secrets and plaintext credentials embedded in URLs</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-STORAGE-1</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>💾</span> Storage & Persistence
+              </div>
+            </td>
+            <td><span class="rule-code">STR-* / STA-* / CTX-*</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Tokens & passwords stored in unencrypted <code>AsyncStorage</code></li>
+                <li>Unencrypted Redux/Zustand <code>persist()</code> state slices</li>
+                <li>Verifies adoption of <code>react-native-keychain</code> / EncryptedStorage</li>
+                <li>MMKV instances created without <code>encryptionKey</code></li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-STORAGE-2</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>🌐</span> Network & Transport
+              </div>
+            </td>
+            <td><span class="rule-code">NET-* / API-*</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Cleartext HTTP (<code>http://</code>) and unencrypted WebSocket (<code>ws://</code>) URLs</li>
+                <li>Disabled SSL validation (<code>rejectUnauthorized: false</code>)</li>
+                <li>Network requests missing explicit timeouts / AbortController</li>
+                <li>Axios client instances missing enforced <code>baseURL</code></li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-NETWORK-1</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>📝</span> Sensitive Logging
+              </div>
+            </td>
+            <td><span class="rule-code">LOG-001..004</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Access tokens, refresh tokens & passwords passed to <code>console.log</code></li>
+                <li>Sensitive user credentials printed via custom logging utilities</li>
+                <li>Production console logs (verifies Babel console removal plugin)</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-PRIVACY-1</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>🗺️</span> Navigation & Deep Links
+              </div>
+            </td>
+            <td><span class="rule-code">NAV-001..005</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Unsanitized deep link URL parameters in <code>Linking.addEventListener</code></li>
+                <li>Dynamic route injection vulnerabilities (<code>navigation.navigate(variable)</code>)</li>
+                <li>Sensitive screens (payments, account) reachable without auth guards</li>
+                <li>Insecure custom URL schemes vs HTTPS Universal Links</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-CODE-4</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>🔐</span> Auth & Session Lifecycle
+              </div>
+            </td>
+            <td><span class="rule-code">AUTH-* / SVC-*</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Token refresh race conditions (missing concurrency mutex locks)</li>
+                <li>Single-use refresh token rotation verification</li>
+                <li>Hardcoded Authorization headers in API calls</li>
+                <li>Suspicious <code>skipAuth: true</code> bypass flags on endpoints</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-AUTH-1</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>🧩</span> Components & WebViews
+              </div>
+            </td>
+            <td><span class="rule-code">CMP-* / SCR-*</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>WebView <code>javaScriptEnabled</code> with wildcard <code>originWhitelist={['*']}</code></li>
+                <li>Dynamic <code>eval()</code> on WebView <code>onMessage</code> bridge payloads</li>
+                <li>Password / PIN <code>TextInput</code> fields missing <code>secureTextEntry</code></li>
+                <li>Payment screens missing screenshot protection (<code>FLAG_SECURE</code>)</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-CODE-4</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>🛡️</span> Code Execution & XSS
+              </div>
+            </td>
+            <td><span class="rule-code">GEN-001..008</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Arbitrary code evaluation via <code>eval()</code> or <code>Function()</code></li>
+                <li>Cross-site scripting via <code>dangerouslySetInnerHTML</code></li>
+                <li>SQL injection risks via template literals in query builders</li>
+                <li>Cryptographically insecure randomness (<code>Math.random()</code> for tokens/IDs)</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-CODE-4</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>⚙️</span> Configuration & Env
+              </div>
+            </td>
+            <td><span class="rule-code">CFG-* / ENV-*</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>Committed <code>.env</code> files containing sensitive production keys</li>
+                <li>Feature flags configured to bypass security controls in production</li>
+                <li>Inline SDK secrets (Firebase, Sentry DSN) inside shared config files</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-CODE-2</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <div class="domain-cell">
+                <span>📱</span> Platform Hardening
+              </div>
+            </td>
+            <td><span class="rule-code">PLAT-001..006</span></td>
+            <td>
+              <ul class="parameters-list">
+                <li>SSL Certificate Pinning / TrustKit setup detection</li>
+                <li>Code obfuscation verification (ProGuard, R8, Hermes bytecode)</li>
+                <li>Device tampering, root & jailbreak detection</li>
+                <li>Hardware-backed biometric authentication enforcement</li>
+              </ul>
+            </td>
+            <td><span class="pill pill-indigo">MASVS-RESILIENCE-1</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Section 3: Engineering Comparison Table -->
+    <div class="section-header">
+      <span class="section-tag">Section 03</span>
+      <h2>Architecture Comparison</h2>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Traditional Linters</th>
+            <th>Cloud AI / LLM Tools</th>
+            <th>Our Security Agent</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Execution Speed</strong></td>
+            <td>Fast (0.5s)</td>
+            <td>Slow (15s - 60s)</td>
+            <td><span class="pill pill-green">Ultra Fast (1.9s)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Data Privacy & Egress</strong></td>
+            <td><span class="pill pill-green">Local</span></td>
+            <td><span class="pill pill-red">Leaves Machine / Cloud</span></td>
+            <td><span class="pill pill-green">100% Offline (Zero Egress)</span></td>
+          </tr>
+          <tr>
+            <td><strong>False Positive Filtering</strong></td>
+            <td><span class="pill pill-red">No (Dumps all hits)</span></td>
+            <td>High (Non-deterministic)</td>
+            <td><span class="pill pill-indigo">8 Deterministic Heuristics</span></td>
+          </tr>
+          <tr>
+            <td><strong>Cost & Dependencies</strong></td>
+            <td>Free / Minimal</td>
+            <td>Paid API Keys / SaaS</td>
+            <td><span class="pill pill-green">Zero API Keys / Zero Deps</span></td>
+          </tr>
+          <tr>
+            <td><strong>Mobile Specific Invariants</strong></td>
+            <td>Generic JS only</td>
+            <td>Generic Prompting</td>
+            <td><span class="pill pill-indigo">React Native Domain Specialized</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>Security Agent Architecture & Overview • Developed for Mobile Engineering Team • Built with Node.js</p>
+    </footer>
+
+  </div>
+
+</body>
+</html>

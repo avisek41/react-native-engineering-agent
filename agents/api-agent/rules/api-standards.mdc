@@ -1,0 +1,48 @@
+---
+description: API Layer Standards for React Native. Covers TanStack Query, apiClient, pure types, query keys, and error recovery.
+globs: src/api/**/*,src/hooks/**/*,src/types/**/*
+alwaysApply: true
+---
+
+# API Layer Engineering Standards
+
+## 1. Pure Types in `src/types/`
+- Types live **only** in `src/types/{camelName}.types.ts`.
+- Types files must have **zero imports**.
+- Always export types from `src/types/index.ts`.
+- Other files must import types from `'types'`, never relative `../types/foo.types`.
+
+## 2. Centralized Endpoints in `src/api/endPoints.ts`
+- All endpoint strings must be defined in `src/api/endPoints.ts`.
+- Naming format: `SCREAMING_SNAKE_CASE`.
+- Strip leading slash (e.g. `PRODUCTS_SEARCH: 'products/search'`).
+- Check `endPoints.ts` first before adding any new constant. Never duplicate.
+
+## 3. Dedicated API Fetcher in `src/api/{camelName}.api.ts`
+- Use `apiRequest` from `'api/apiClient'` — never direct `fetch` or `axios`.
+- Re-export all associated types from `'types'`.
+- Add debug logging with `logger.debug` from `'utils'`.
+- HTTP methods must be string literals `'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'`.
+
+## 4. TanStack Query Hook Standards
+- **Infinite Queries (`useInfiniteQuery`)**:
+  - Always provide a `select` mapper returning `{ items, total }`.
+  - Provide `initialPageParam` (0 for skip-based, 1 for page-based).
+  - Provide `getNextPageParam` logic based on `total` or `hasNextPage`.
+- **Single Item Queries (`useQuery`)**:
+  - Detail query key must be a function: `detail: (id?: string | number) => ['name', 'detail', id] as const`.
+  - Pass destructuring parameters with defaults: `({ id, enabled = true } = {})`.
+- **Mutations (`useMutation`)**:
+  - Invalidate query cache upon success: `queryClient.invalidateQueries({ queryKey: keys.all })`.
+  - Attach `meta: API_TOAST` from `'utils/queryToastMeta'` when user feedback is needed.
+
+## 5. Cache & Retry Policy
+- Default `staleTime`: 2 minutes (`1000 * 60 * 2`).
+- Default `gcTime`: 5 minutes (`1000 * 60 * 5`).
+- Retry logic: Skip 4xx client errors, retry up to 2 times for 5xx/network errors:
+  ```ts
+  retry: (failureCount, err) => {
+    if (err.status >= 400 && err.status < 500) return false;
+    return failureCount < 2;
+  }
+  ```

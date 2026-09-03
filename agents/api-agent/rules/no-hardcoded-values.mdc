@@ -1,0 +1,19 @@
+---
+description: Prohibits hardcoded endpoint paths, base URLs, magic timeout values, and unmanaged string literals in API code.
+globs: src/api/**/*,src/hooks/**/*
+alwaysApply: true
+---
+
+# No Hardcoded Values in API Layer
+
+## 1. Endpoints
+- ❌ Never write inline endpoint strings like `fetch('/api/v1/users')`.
+- ✅ Always reference centralized constants: `ENDPOINTS.USERS`.
+
+## 2. Base URLs and Environment Config
+- ❌ Never hardcode `http://localhost:3000` or `https://dev.futureonesports.com` in API files.
+- ✅ Always use `src/configs/baseURL.ts` and environment configuration loaded via `react-native-config`.
+
+## 3. Query Timeouts & Cache Durations
+- Define explicit constants for pagination limits (e.g. `DEFAULT_LIMIT = 20`).
+- Standardize `staleTime` and `gcTime` using millisecond arithmetic (e.g. `1000 * 60 * 2` for 2 minutes).

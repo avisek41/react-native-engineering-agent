@@ -1,0 +1,24 @@
+{
+  "name": "ui-agent",
+  "version": "1.0.0",
+  "description": "UI Implementation Specialist & Static Validator Agent for React Native and Gluestack UI",
+  "main": "ui-agent.js",
+  "scripts": {
+    "validate": "node ui-agent.js validate ./src",
+    "validate:screens": "node ui-agent.js validate ./src/screens",
+    "validate:components": "node ui-agent.js validate ./src/components",
+    "scaffold:screen": "node ui-agent.js scaffold screen",
+    "scaffold:component": "node ui-agent.js scaffold component"
+  },
+  "keywords": [
+    "react-native",
+    "gluestack-ui",
+    "ui-agent",
+    "figma",
+    "design-tokens",
+    "static-analysis",
+    "cursor-agent"
+  ],
+  "author": "FutureOne Sports",
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,23 @@
+---
+description: Modern JavaScript and TypeScript patterns for API layer development.
+globs: src/api/**/*,src/hooks/**/*,src/types/**/*
+alwaysApply: true
+---
+
+# Modern JS & TS Patterns for API Layer
+
+## 1. Type Safety & Generics
+- Avoid `any` at all costs.
+- Use explicit return types on API fetcher functions (`Promise<ResponseType>`).
+- Define `queryKey` tuples with `as const`.
+- Handle unknown payloads with structured interfaces or `Record<string, unknown>`.
+
+## 2. Asynchronous Patterns & Error Handling
+- Use `async/await` syntax instead of promise chaining (`.then().catch()`).
+- Always bubble HTTP exceptions as typed `ApiError` instances.
+- Never swallow errors silently without logging via `logger.error`.
+
+## 3. Immutability & Clean State
+- Treat React Query cache as immutable.
+- Use pure selector functions (`select: (data) => ...`) to transform API responses into UI-ready models.
+- Keep helper functions deterministic and free of side effects.

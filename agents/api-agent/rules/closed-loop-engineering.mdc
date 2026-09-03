@@ -1,0 +1,32 @@
+---
+description: Closed-Loop Self-Verification Engine for API Layer changes. Enforces TSC zero-error gating and barrel verification before task completion.
+globs: src/api/**/*,src/hooks/**/*,src/types/**/*
+alwaysApply: true
+---
+
+# Closed-Loop Engineering for API Layer
+
+Every API agent workflow must run the closed-loop convergence cycle:
+
+```
+┌──────────────────┐       ┌──────────────────────┐       ┌────────────────────────┐
+│ 1. Code / Change │ ────▶ │ 2. Verify Gate (TSC) │ ────▶ │ 3. Inspect Diagnostics │─┐
+│ Types & Hooks    │       │ `npx tsc --noEmit`   │       │ & Self-Correct In-Loop │ │
+└──────────────────┘       └──────────────────────┘       └────────────────────────┘ │
+         ▲                                                                          │
+         └────────────────────────── 🔁 REPEAT UNTIL 0 ERRORS ──────────────────────┘
+```
+
+## Protocol Steps
+
+1. **Static Analysis & Compiler Gate**:
+   - Run `npx tsc --noEmit` after generating or modifying any type, API fetcher, or hook.
+   - If TypeScript catches any error (e.g. invalid generic parameter, missing property, mismatched return type), read the diagnostic output and fix it immediately in-loop.
+   - Do NOT stop or ask the user to fix compile errors. Iterate until `tsc` completes cleanly.
+
+2. **Barrel Verification**:
+   - Verify that `src/types/index.ts` exports all new types.
+   - Verify that `src/hooks/index.ts` exports all new hooks and query keys.
+
+3. **No Breaking Changes on Existing Endpoints**:
+   - When updating existing APIs or types, ensure backward compatibility with already integrated screens.
