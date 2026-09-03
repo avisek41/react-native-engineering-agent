@@ -1,15 +1,28 @@
 # API Agent 🔌
 
-> **Architecture Philosophy**: Built on **Closed-Loop Engineering** principles. The agent performs Swagger contract verification, barrel validation, and in-loop TypeScript convergence to guarantee 100% type safety and zero duplicate code.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
+[![TanStack Query](https://img.shields.io/badge/TanStack-React%20Query-FF4154.svg?logo=reactquery)](https://tanstack.com/query)
+[![TypeScript Strict](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript)](#-core-rules--invariants)
+[![Closed-Loop Engineering](https://img.shields.io/badge/architecture-closed--loop-6f42c1.svg)](#architecture-philosophy)
+
+> Part of the [React Native Agents](../../README.md) suite — pairs with the UI, Integration, and Security agents.
+
+**100% type safety. Zero duplicate code.**
+
+### Architecture Philosophy
+
+> Built on **Closed-Loop Engineering** principles. The agent performs Swagger contract verification, barrel validation, and in-loop TypeScript convergence to guarantee 100% type safety and zero duplicate code.
 
 An enterprise-grade, standalone API Implementation, Discovery, and Validation Agent for React Native and TanStack Query (`@tanstack/react-query`) applications.
-
 
 The **API Agent** specializes in discovering OpenAPI / Swagger contracts, enforcing DRY reuse across the codebase, generating strictly-typed contracts and hooks, and performing static closed-loop verification — completely isolated from UI rendering.
 
 ---
 
 ## 📦 Directory Overview
+
+<details>
+<summary>Click to expand full directory tree</summary>
 
 ```
 api-agent/
@@ -57,11 +70,14 @@ api-agent/
     └── report.js                   # Output formatting (Terminal/JSON)
 ```
 
+</details>
+
 ---
 
 ## 🚀 Quick Start & CLI Tools
 
 ### 1. Validate API Layer
+
 Run the static validator across the API, hooks, and types layers:
 
 ```bash
@@ -79,6 +95,7 @@ node api-agent/api-agent.js validate ./src/types
 ```
 
 ### 2. Scaffold New API Modules
+
 Quickly generate boilerplate adhering to strict team standards:
 
 ```bash
@@ -96,30 +113,44 @@ node api-agent/api-agent.js scaffold mutation --name=authLogin --endpoint=/auth/
 
 ## 🛡️ Core Rules & Invariants
 
+#### Types & Barrels
+
 1. **Pure Types**: Types live ONLY in `src/types/{camelName}.types.ts` with zero imports.
 2. **Barrel Exports**: Always re-export types in `src/types/index.ts` and hooks in `src/hooks/index.ts`.
 3. **No Inline Types**: API fetchers and hooks must import types strictly from `'types'`.
+
+#### Networking
+
 4. **Endpoint Constants**: All URL paths must be registered in `src/api/endPoints.ts` (SCREAMING_SNAKE_CASE).
 5. **No Direct `fetch` or `axios`**: Always use `apiRequest` from `api/apiClient`.
+6. **Logging**: Use `logger` from `'utils'` inside `queryFn` and `mutationFn`.
+
+#### Query Conventions
+
 6. **Query Keys as Functions**: Detail and list query keys must be factory functions returning `const` tuples.
 7. **Infinite Query `select`**: Infinite queries must always provide a `select` mapper returning `{ items, total }`.
-8. **Logging**: Use `logger` from `'utils'` inside `queryFn` and `mutationFn`.
+
+#### Boundaries
+
 9. **Never Touch UI**: No JSX, components, navigation, or screens.
 
 ---
 
 ## 💡 Real-World Example & Walkthrough
 
-### Scenario: Adding Player Profile Query from Swagger
+<details>
+<summary>Scenario: Adding Player Profile Query from Swagger — click to expand</summary>
 
-#### Step 1: User Input
+### Step 1: User Input
+
 ```markdown
 Swagger Doc: https://uat.futureonesports.com/api/docs-json
 Operation: GET /mobile/players/{playerId}/profile
 Requirement: "Generate the API request, TypeScript types, and React Query hook for the player profile endpoint."
 ```
 
-#### Step 2: API Agent Execution
+### Step 2: API Agent Execution
+
 1. Extracts parameters (`playerId`), authorization mode (`Bearer`), and payload shape from Swagger JSON.
 2. Checks existing codebase to ensure endpoint isn't already declared.
 3. Generates zero-import types in `src/types/playerProfile.types.ts`:
@@ -136,7 +167,7 @@ Requirement: "Generate the API request, TypeScript types, and React Query hook f
    ```typescript
    export const ENDPOINTS = {
      // ...
-     PLAYER_PROFILE: 'mobile/players/:playerId/profile',
+     PLAYER_PROFILE: "mobile/players/:playerId/profile",
    } as const;
    ```
 5. Creates API function in `src/api/playerProfile.api.ts` and TanStack Query hook in `src/hooks/queries/usePlayerProfileQuery.ts`.
@@ -146,8 +177,9 @@ Requirement: "Generate the API request, TypeScript types, and React Query hook f
    node agents/api-agent/api-agent.js validate ./src/api
    ```
 
-#### Step 3: Generated API Handoff Contract
-```markdown
+### Step 3: Generated API Handoff Contract
+
+```yaml
 ## API Handoff
 status: created
 endpoint: mobile/players/:playerId/profile
@@ -169,3 +201,4 @@ blockedOn: none
 notes: "Zero-import types generated. Query key factory and hook ready for use."
 ```
 
+</details>
