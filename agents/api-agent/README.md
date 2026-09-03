@@ -1,6 +1,9 @@
 # API Agent 🔌
 
+> **Architecture Philosophy**: Built on **Closed-Loop Engineering** principles. The agent performs Swagger contract verification, barrel validation, and in-loop TypeScript convergence to guarantee 100% type safety and zero duplicate code.
+
 An enterprise-grade, standalone API Implementation, Discovery, and Validation Agent for React Native and TanStack Query (`@tanstack/react-query`) applications.
+
 
 The **API Agent** specializes in discovering OpenAPI / Swagger contracts, enforcing DRY reuse across the codebase, generating strictly-typed contracts and hooks, and performing static closed-loop verification — completely isolated from UI rendering.
 

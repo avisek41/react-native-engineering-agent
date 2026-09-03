@@ -1,6 +1,9 @@
 # Universal App Security Scanner v3
 
+> **Architecture Philosophy**: Built on **Closed-Loop Engineering** principles. Features a deterministic 4-phase audit cycle (Detect ➔ Analyze ➔ Triage ➔ Remediate) with automated safe fixes and compile-check rollback to eliminate regression risks.
+
 A config-driven, enterprise-grade static security analyzer for React Native (and
+
 JS/TS) apps. Scans at **three distinct levels** — root, folder, and file — each
 with the right rule set for that scope. Produces reports in HTML, Markdown, JSON,
 and SARIF.

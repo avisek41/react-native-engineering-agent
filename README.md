@@ -58,9 +58,38 @@ Provide the agent instructions (`agent.md`), skills, or rules to your AI coding 
 3. **Step 3 — Integration Agent**: Generate the screen coordinator hook (`useProfileScreen.ts`) and DTO mapper to wire queries to the UI view model.
 
 
+## 🔁 Closed-Loop Engineering Base
+
+Every agent in this repository is architected around **Closed-Loop Engineering** principles. Rather than generating unverified code or relying solely on single-shot completions, each agent executes an in-loop validation cycle that iteratively verifies code against compiler gates, strict lint rules, and security analyzers before declaring a task complete:
+
+```
+┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
+│ 1. UI Agent     │ ────▶ │ 2. API Agent    │ ────▶ │ 3. Integration  │ ────▶ │ 4. Security     │
+│ (Figma ➔ UI)    │       │ (OpenAPI ➔      │       │    Agent        │       │    Agent        │
+│                 │       │  Queries/Types) │       │ (Wires UI ➔     │       │ (Audits &       │
+│  Closed-Loop:   │       │  Closed-Loop:   │       │  API + Native)  │       │  Auto-Fixes     │
+│  Tokens + TSC   │       │  Swagger + TSC  │       │  Closed-Loop:   │       │  with Rollback) │
+│  Convergence    │       │  Convergence    │       │  States + TSC   │       │  Zero Regress.  │
+└────────┬────────┘       └────────┬────────┘       └────────┬────────┘       └────────┬────────┘
+         │ (UI Handoff)            │ (API Handoff)           │ (Integ. Handoff)        │
+         └─────────────────────────┴─────────────────────────┴─────────────────────────┘
+                                                                           ▼
+                                                                Production Ready Code
+```
+
+### In-Loop Verification Gates per Agent
+
+| Agent | In-Loop Self-Verification Checks | Closed-Loop Gate |
+|---|---|---|
+| **🎨 UI Agent** | • Zero hardcoded hex colors / magic strings (`COLORS.*`, `STRINGS.*`)<br>• Gluestack primitive enforcement & responsive layout checks<br>• Local ViewModel contract validation | `npx tsc --noEmit`<br>`node ui-agent.js validate` |
+| **🔌 API Agent** | • 100% parameter and response schema match with Swagger/OpenAPI<br>• Zero-import pure TypeScript interfaces (`src/types/*.types.ts`)<br>• Re-export verification in `types/index.ts` and `hooks/index.ts` | `npx tsc --noEmit`<br>`node api-agent.js validate` |
+| **🔄 Integration Agent** | • Zero direct HTTP/API calls inside JSX components<br>• Complete state mapping: `isLoading`, `isError`, `isRefreshing`, `isEmpty`<br>• Pagination & pull-to-refresh lifecycle verification | `npx tsc --noEmit`<br>`node integration-agent.js validate` |
+| **🛡️ Security Agent** | • Static multi-level analysis (root, folder, file) across 8 domain packs<br>• Heuristic false-positive suppression (skips comments, test mocks, `__DEV__`)<br>• Safe auto-remediation with automatic rollback on compile failure | `security-agent.js`<br>`security-agent-ai.js --fix` |
+
 ---
 
 ## Supported AI Coding Agents
+
 
 These agents are designed to work seamlessly with:
 

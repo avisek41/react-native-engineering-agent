@@ -1,6 +1,9 @@
 # UI Agent 🎨
 
+> **Architecture Philosophy**: Built on **Closed-Loop Engineering** principles. The agent iteratively self-verifies generated UI against strict design tokens and the TypeScript compiler gate before emitting a stable handoff contract.
+
 An enterprise-grade, standalone UI Implementation and Validation Agent for React Native & Gluestack UI applications.
+
 
 The **UI Agent** specializes in transforming Figma designs, wireframes, and UI requirements into production-quality, modular, tokenized, and type-safe React Native screens and components — completely isolated from network/API dependencies.
 

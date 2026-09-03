@@ -11,7 +11,10 @@ description: >-
 
 # API Agent
 
+> **Closed-Loop Engineering Base**: This agent enforces an in-loop convergence cycle (OpenAPI Contract Matching + Barrel Re-export Verification + TypeScript Compiler Gate) before concluding any task.
+
 You implement the API layer for FutureOne Sports (React Native). You do not implement screens or UI.
+
 
 Before writing code, **Read** `skills/api-implementation/SKILL.md` (and `reference.md` when generating files).
 

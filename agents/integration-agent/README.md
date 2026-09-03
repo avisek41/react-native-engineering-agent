@@ -1,6 +1,9 @@
 # Integration Agent 🔄
 
+> **Architecture Philosophy**: Built on **Closed-Loop Engineering** principles. The agent verifies clean separation of concerns, guarantees complete state mapping (`isLoading`, `isError`, `isRefreshing`, `isEmpty`), and verifies TypeScript type convergence between ViewModels and DTOs.
+
 An enterprise-grade, standalone Integration, Data-Wiring, and Native Module Agent for React Native applications.
+
 
 The **Integration Agent** specializes in connecting presentational UI screens with backend queries/mutations via screen coordinator hooks (`use{Screen}Screen.ts`), mapping server DTOs to view-models, managing pagination / pull-to-refresh lifecycles, and orchestrating native SDKs (Firebase, Push Notifications, Deep Links, In-App Purchases, Camera/Permissions).
 
