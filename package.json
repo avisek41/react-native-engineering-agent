@@ -3,8 +3,6 @@
   "version": "1.0.0",
   "description": "Specialized Closed-Loop AI Engineering Agents for React Native development",
   "scripts": {
-    "test": "node benchmarks/run-benchmarks.js",
-    "benchmark": "node benchmarks/run-benchmarks.js",
     "validate:ui": "node agents/ui-agent/ui-agent.js validate ./src",
     "validate:api": "node agents/api-agent/api-agent.js validate ./src",
     "validate:integration": "node agents/integration-agent/integration-agent.js validate ./src",

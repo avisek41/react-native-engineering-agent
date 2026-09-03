@@ -129,11 +129,11 @@ Each agent contains its own instructions, skills, prompts, and supporting CLI to
 - [Getting Started Guide](docs/getting-started.md)
 - [Agent Selection Guide](docs/agent-selection.md)
 - [Multi-Agent Usage & Workflows](docs/usage.md)
-- [Benchmarking & Health Metrics Guide](docs/benchmarks.md)
 
 ---
 
 ## Contributing
+
 
 
 To add or modify an agent, see [CONTRIBUTING.md](CONTRIBUTING.md).
