@@ -1,0 +1,24 @@
+{
+  "name": "react-native-engineering-agents",
+  "version": "1.0.0",
+  "description": "Specialized Closed-Loop AI Engineering Agents for React Native development",
+  "scripts": {
+    "test": "node benchmarks/run-benchmarks.js",
+    "benchmark": "node benchmarks/run-benchmarks.js",
+    "validate:ui": "node agents/ui-agent/ui-agent.js validate ./src",
+    "validate:api": "node agents/api-agent/api-agent.js validate ./src",
+    "validate:integration": "node agents/integration-agent/integration-agent.js validate ./src",
+    "scan:security": "node agents/security-agent/security-agent.js ./src",
+    "agent:security": "node agents/security-agent/security-agent-ai.js ./src"
+  },
+  "keywords": [
+    "react-native",
+    "ai-agents",
+    "closed-loop-engineering",
+    "gluestack",
+    "tanstack-query",
+    "owasp-masvs"
+  ],
+  "author": "Avisek",
+  "license": "MIT"
+}
