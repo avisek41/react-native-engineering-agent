@@ -68,7 +68,30 @@ hook: useUserProfileQuery
 
 ---
 
-### Step 3: Security Agent (Audit & Hardening)
+### Step 3: Integration Agent (Coordinator Hook & Mappers)
+```
+Input: UI Handoff Contract + API Handoff Contract
+Agent: agents/integration-agent/agent.md
+Output: Coordinator hook (useProfileScreen.ts), DTO mapper, pagination, and Integration Handoff Contract
+```
+
+**Integration Handoff Contract:**
+```markdown
+## Integration Handoff
+status: completed
+screen: ProfileScreen
+hookFile: src/screens/Main/ProfileScreen/useProfileScreen.ts
+mapperFile: src/utils/profileMapper.ts
+wiredQueries:
+  - useUserProfileQuery
+wiredMutations: []
+nativeModules: none
+notes: "All view models wired cleanly. Zero JSX networking."
+```
+
+---
+
+### Step 4: Security Agent (Audit & Hardening)
 ```
 Input: Codebase or modified files
 Agent: agents/security-agent/agent.md
@@ -79,3 +102,4 @@ Run before opening a PR:
 ```bash
 node agents/security-agent/security-agent.js ./src --format=sarif --fail-on=high
 ```
+

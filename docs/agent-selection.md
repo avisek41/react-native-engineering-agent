@@ -10,6 +10,7 @@ Choosing the right agent ensures clean separation of concerns, eliminates redund
 |---|---|---|
 | **UI Agent** | `agents/ui-agent/` | Screens, components, design tokens, layouts, Figma translation |
 | **API Agent** | `agents/api-agent/` | OpenAPI/Swagger discovery, TanStack Query hooks, API types, endpoints |
+| **Integration Agent** | `agents/integration-agent/` | Screen hooks (`useXxxScreen`), DTO mappers, pull-to-refresh, native SDKs |
 | **Security Agent** | `agents/security-agent/` | Security audits, token storage, encryption, hardcoded secrets, MASVS |
 
 ---
@@ -48,6 +49,24 @@ Use when the primary task involves backend communication, OpenAPI discovery, or 
 - Editing navigation stacks or theme colors
 
 ---
+
+## 🔄 Integration Agent (`agents/integration-agent/`)
+
+Use when wiring presentational screens to backend queries/mutations or integrating native device SDKs.
+
+### Examples:
+- Create screen coordinator hooks (`use{Screen}Screen.ts`)
+- Write pure DTO-to-ViewModel transformation mappers
+- Wire pagination (`useInfiniteQuery`) to `LegendList` or `FlatList`
+- Wire pull-to-refresh (`refetch`) and mutation submissions
+- Configure Firebase, Push Notifications, Deep Linking, and Permissions
+
+### When NOT to use:
+- Designing raw UI components from Figma (use UI Agent)
+- Writing raw endpoints or discovering Swagger contracts (use API Agent)
+
+---
+
 
 ## 🛡️ Security Agent (`agents/security-agent/`)
 

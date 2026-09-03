@@ -1,0 +1,15 @@
+---
+description: Enforce zero direct networking, axios, or fetch inside React Native JSX components
+globs: ["src/screens/**/*.tsx", "src/components/**/*.tsx"]
+---
+
+# No Direct API in Components
+
+1. **Forbidden in JSX Components**:
+   - `fetch(...)`
+   - `axios(...)` / `axiosInstance(...)`
+   - `useQuery(...)` or `useMutation(...)` directly in `.tsx` screen or component files.
+
+2. **Required Pattern**:
+   - Move all query/mutation logic to `use{Screen}Screen.ts`.
+   - The `.tsx` component should only consume props and handlers returned by the hook.

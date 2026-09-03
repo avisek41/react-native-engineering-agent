@@ -1,0 +1,19 @@
+{
+  "appName": "futureonesports",
+  "srcRoot": "./src",
+  "screensDir": "./src/screens",
+  "utilsDir": "./src/utils",
+  "rules": {
+    "enforce3StateGuards": "error",
+    "forbidDirectApiInScreens": "error",
+    "forbidRefetchInPTR": "error",
+    "enforceInfiniteListProps": "warn",
+    "enforceMapperInUtils": "warn"
+  },
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__mocks__/**",
+    "**/node_modules/**"
+  ]
+}

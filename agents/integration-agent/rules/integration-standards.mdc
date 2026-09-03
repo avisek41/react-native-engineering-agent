@@ -1,0 +1,18 @@
+---
+description: Standards for integrating UI components with data layers and native SDKs
+globs: ["src/screens/**/use*Screen.ts", "src/services/**"]
+---
+
+# Integration Standards
+
+1. **Screen Hook Pattern**:
+   - Every screen with dynamic data MUST have a corresponding `use{Screen}Screen.ts` hook.
+   - Screen JSX files (`{Screen}.tsx`) must only call `const state = use{Screen}Screen(props);` and bind returned props.
+
+2. **Error and Loading Boundaries**:
+   - All query states (`isLoading`, `isError`, `isFetchingNextPage`) must be mapped to explicit UI states.
+   - Failures must present user-friendly error feedback and retry triggers.
+
+3. **Strict Separation of Concerns**:
+   - Do NOT render JSX or Gluestack UI components inside integration hooks or services.
+   - Do NOT make direct HTTP requests inside components.

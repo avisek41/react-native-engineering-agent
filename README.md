@@ -8,6 +8,7 @@ A collection of specialized AI engineering agents for React Native application d
 |---|---|---|
 | **UI Agent** | Screens, components, layouts, design tokens, Figma translation | `agents/ui-agent/` |
 | **API Agent** | OpenAPI/Swagger contracts, React Query hooks, mutations, API types | `agents/api-agent/` |
+| **Integration Agent** | Screen coordinator hooks, DTO mappers, native modules, SDKs | `agents/integration-agent/` |
 | **Security Agent** | OWASP MASVS compliance, secure storage, secret detection, audits | `agents/security-agent/` |
 
 ---
@@ -16,9 +17,10 @@ A collection of specialized AI engineering agents for React Native application d
 
 - **UI & Layout work** → `agents/ui-agent/`
 - **Backend / API work** → `agents/api-agent/`
+- **Data-Wiring & Native SDKs** → `agents/integration-agent/`
 - **Security & Compliance work** → `agents/security-agent/`
 
-> If a task crosses multiple areas, use multiple agents in sequence (e.g., UI Agent followed by API Agent). For details on picking the right agent, see [docs/agent-selection.md](docs/agent-selection.md).
+> If a task crosses multiple areas, use multiple agents in sequence (e.g., UI Agent → API Agent → Integration Agent). For details on picking the right agent, see [docs/agent-selection.md](docs/agent-selection.md).
 
 ---
 
@@ -35,9 +37,10 @@ git clone https://github.com/avisek41/react-native-engineering-agent.git
 Navigate to the agent directory:
 
 ```bash
-cd agents/ui-agent/        # for UI work
-cd agents/api-agent/       # for API work
-cd agents/security-agent/  # for security & audits
+cd agents/ui-agent/           # for UI work
+cd agents/api-agent/          # for API work
+cd agents/integration-agent/  # for data wiring & native modules
+cd agents/security-agent/     # for security & audits
 ```
 
 ### 3. Provide to your AI coding assistant
@@ -52,6 +55,8 @@ Provide the agent instructions (`agent.md`), skills, or rules to your AI coding 
 
 1. **Step 1 — UI Agent**: Scaffold and implement the presentational UI screen from designs. The UI Agent emits a `UI Handoff` contract.
 2. **Step 2 — API Agent**: Inspect OpenAPI specs, discover existing services, generate TanStack Query hooks, and emit an `API Handoff` contract.
+3. **Step 3 — Integration Agent**: Generate the screen coordinator hook (`useProfileScreen.ts`) and DTO mapper to wire queries to the UI view model.
+
 
 ---
 
@@ -82,6 +87,7 @@ react-native-agents/
 ├── agents/
 │   ├── ui-agent/             # Figma-to-code, Gluestack, components & screens
 │   ├── api-agent/            # Swagger discovery, TanStack Query & API types
+│   ├── integration-agent/    # Coordinator hooks, mappers & native SDKs
 │   └── security-agent/       # Static security analyzer, MASVS & remediation
 │
 └── docs/
@@ -89,6 +95,7 @@ react-native-agents/
     ├── agent-selection.md    # Detailed guide on choosing the right agent
     └── usage.md              # Multi-agent workflows & IDE setups
 ```
+
 
 Each agent contains its own instructions, skills, prompts, and supporting CLI tools.
 

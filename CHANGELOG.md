@@ -15,10 +15,16 @@ All notable changes to the `react-native-engineering-agents` project will be doc
   - TanStack Query (`@tanstack/react-query`) query/mutation scaffolding.
   - Pure TypeScript type contract generation and barrel export verification.
   - API Handoff contract specification.
+- **Integration Agent (`agents/integration-agent/`)**:
+  - Screen coordinator hook (`useXxxScreen.ts`) generator and boundaries.
+  - DTO-to-ViewModel mapping guidelines and templates.
+  - Third-party native SDK wrapping protocol (Firebase, Push, Deep Linking).
+  - Integration Handoff contract specification.
 - **Security Agent (`agents/security-agent/`)**:
   - Static multi-level security analyzer (root, folder, file).
   - Deterministic contextual AI analyzer with false-positive detection.
   - Safe automatic remediation mode (`--fix`).
   - OWASP MASVS compliance mapping and multi-format reporting (HTML, Markdown, JSON, SARIF).
+
 - **Core Documentation**:
   - Comprehensive `README.md`, `docs/getting-started.md`, `docs/agent-selection.md`, and `docs/usage.md`.

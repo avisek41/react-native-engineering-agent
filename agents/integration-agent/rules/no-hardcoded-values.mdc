@@ -1,0 +1,14 @@
+---
+description: Prohibits hardcoded strings and magic values in screen integration code.
+globs: src/screens/**/*,src/utils/**/*
+alwaysApply: true
+---
+
+# No Hardcoded Values in Integration
+
+## 1. Strings & Labels
+- ❌ Never write inline UI strings: `<NoData message="No items found" />`.
+- ✅ Always use strings from `constant`: `<NoData message={STRINGS.EMPTY.ITEMS} />`.
+
+## 2. Test Identifiers
+- Include semantic `testID` attributes on `<Loader />`, `<ScreenErrorState />`, and `<LegendList />`.

@@ -1,0 +1,16 @@
+---
+description: Modern JS/TS patterns for integration layer. Covers null-coalescing, optional chaining, and pure data transformation.
+globs: src/screens/**/*,src/utils/**/*
+alwaysApply: true
+---
+
+# Modern JS & TS Patterns for Integration
+
+## 1. Safe Property Access
+- Use optional chaining (`?.`) and nullish coalescing (`??`) for API response properties.
+- Provide safe fallback primitives: `''` for string, `0` for numbers, `[]` for arrays.
+
+## 2. Pure Data Transformation
+- Never mutate incoming query data objects in place.
+- Use `.map()` on arrays to produce immutable view-model objects.
+- Destructure hook return properties clearly.

@@ -1,0 +1,16 @@
+---
+description: Closed-loop verification process for integration hooks and mappers
+globs: ["src/screens/**/use*Screen.ts", "src/utils/*Mapper.ts"]
+---
+
+# Closed-Loop Integration Verification
+
+1. **Compiler Verification**:
+   - Run `npx tsc --noEmit`.
+   - Ensure 0 errors between API DTO types and Screen ViewModel interfaces.
+
+2. **Boundary Validation**:
+   - Ensure all network hooks are imported from `'hooks'` barrel and types from `'types'` barrel.
+
+3. **State Coverage**:
+   - Verify `isLoading`, `isError`, `isRefreshing`, and empty states are mapped.

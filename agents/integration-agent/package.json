@@ -1,0 +1,23 @@
+{
+  "name": "@rn-agents/integration-agent",
+  "version": "1.0.0",
+  "description": "Integration, Data-Wiring, and Native Module Agent for React Native applications",
+  "main": "integration-agent.js",
+  "bin": {
+    "integration-agent": "./integration-agent.js"
+  },
+  "scripts": {
+    "validate": "node integration-agent.js validate ./src",
+    "scaffold": "node integration-agent.js scaffold"
+  },
+  "keywords": [
+    "react-native",
+    "ai-agent",
+    "integration",
+    "data-wiring",
+    "tanstack-query",
+    "native-modules"
+  ],
+  "author": "Avisek",
+  "license": "MIT"
+}

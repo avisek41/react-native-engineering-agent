@@ -1,0 +1,31 @@
+---
+description: Closed-Loop verification cycle for API-to-UI integration. Ensures zero compile errors, test passes, and guard coverage.
+globs: src/screens/**/*,src/utils/**/*
+alwaysApply: true
+---
+
+# Closed-Loop Integration Verification
+
+Every integration task must complete the self-verification loop before handoff:
+
+```
+┌─────────────────┐       ┌────────────────────────┐       ┌────────────────────────┐
+│ 1. Wire Hook &  │ ────▶ │ 2. Verify TSC, Jest &  │ ────▶ │ 3. Inspect Diagnostics │─┐
+│ View-Model      │       │    Loading/Error Guard │       │ & Self-Correct In-Loop │ │
+└─────────────────┘       └────────────────────────┘       └────────────────────────┘ │
+         ▲                                                                            │
+         └────────────────────────── 🔁 REPEAT UNTIL 0 ERRORS ────────────────────────┘
+```
+
+## Verification Gates
+
+1. **Static Analysis & Compiler Gate**:
+   - Run `npx tsc --noEmit`.
+   - Resolve any type incompatibilities between the mapper output and screen view-model props in-loop.
+
+2. **Unit Test Gate**:
+   - Run mapper tests: `npm test -- <mapperTestPath>`.
+   - Ensure null/empty API payloads are handled without crashes.
+
+3. **State Guard Verification**:
+   - Confirm screen renders `<Loader />` when loading and `<ScreenErrorState />` on error.

@@ -29,6 +29,7 @@ git clone https://github.com/avisek41/react-native-engineering-agent.git react-n
 agents/
 ├── ui-agent/          # UI specialist (Figma, Gluestack, components, screens)
 ├── api-agent/         # API specialist (Swagger, TanStack Query, types)
+├── integration-agent/ # Integration specialist (Screen hooks, mappers, native SDKs)
 └── security-agent/    # Security specialist (Scanner, heuristic agent, MASVS)
 ```
 
@@ -61,6 +62,17 @@ node agents/api-agent/api-agent.js validate ./src/api
 # Scaffold a query hook
 node agents/api-agent/api-agent.js scaffold query --name=userProfile --endpoint=/user/profile
 ```
+
+### Integration Agent
+Scaffold screen hooks or validate separation of concerns:
+```bash
+# Validate separation of concerns
+node agents/integration-agent/integration-agent.js validate ./src/screens
+
+# Scaffold a coordinator hook
+node agents/integration-agent/integration-agent.js scaffold hook PlayerProfile
+```
+
 
 ### Security Agent
 Run static security scans and automated remediation:
