@@ -129,10 +129,12 @@ Each agent contains its own instructions, skills, prompts, and supporting CLI to
 - [Getting Started Guide](docs/getting-started.md)
 - [Agent Selection Guide](docs/agent-selection.md)
 - [Multi-Agent Usage & Workflows](docs/usage.md)
+- [Agent Capability & Verification Audit Report](docs/agent-verification-report.md)
 
 ---
 
 ## Contributing
+
 
 
 
