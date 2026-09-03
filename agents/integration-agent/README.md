@@ -1,15 +1,28 @@
 # Integration Agent 🔄
 
-> **Architecture Philosophy**: Built on **Closed-Loop Engineering** principles. The agent verifies clean separation of concerns, guarantees complete state mapping (`isLoading`, `isError`, `isRefreshing`, `isEmpty`), and verifies TypeScript type convergence between ViewModels and DTOs.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
+[![TanStack Query](https://img.shields.io/badge/TanStack-React%20Query-FF4154.svg?logo=reactquery)](https://tanstack.com/query)
+[![TypeScript Strict](https://img.shields.io/badge/TypeScript-strict-3178C6.svg?logo=typescript)](#-core-rules--invariants)
+[![Closed-Loop Engineering](https://img.shields.io/badge/architecture-closed--loop-6f42c1.svg)](#architecture-philosophy)
+
+> Part of the [React Native Agents](../../README.md) suite — pairs with the UI, API, and Security agents.
+
+**Wires UI to data. Zero networking in components.**
+
+### Architecture Philosophy
+
+> Built on **Closed-Loop Engineering** principles. The agent verifies clean separation of concerns, guarantees complete state mapping (`isLoading`, `isError`, `isRefreshing`, `isEmpty`), and verifies TypeScript type convergence between ViewModels and DTOs.
 
 An enterprise-grade, standalone Integration, Data-Wiring, and Native Module Agent for React Native applications.
-
 
 The **Integration Agent** specializes in connecting presentational UI screens with backend queries/mutations via screen coordinator hooks (`use{Screen}Screen.ts`), mapping server DTOs to view-models, managing pagination / pull-to-refresh lifecycles, and orchestrating native SDKs (Firebase, Push Notifications, Deep Links, In-App Purchases, Camera/Permissions).
 
 ---
 
 ## 📦 Directory Overview
+
+<details>
+<summary>Click to expand full directory tree</summary>
 
 ```
 integration-agent/
@@ -50,49 +63,37 @@ integration-agent/
     └── scaffolder.js                 # CLI code generator for hooks & mappers
 ```
 
+</details>
+
 ---
 
 ## 🎯 Separation of Concerns
 
-```
-                  ┌────────────────────────┐
-                  │      Parent Agent      │
-                  └───────────┬────────────┘
-                              │
-             ┌────────────────┴────────────────┐
-             ↓                                 ↓
-      ┌──────────────┐                  ┌──────────────┐
-      │   UI Agent   │                  │  API Agent   │
-      │ (Figma ➔ UI) │                  │ (Swagger ➔   │
-      │  [Pure View] │                  │  Hooks/Types)│
-      └──────┬───────┘                  └──────┬───────┘
-             │                                 │
-             │ (UI Handoff)                    │ (API Handoff)
-             └────────────────┬────────────────┘
-                              ↓
-                  ┌────────────────────────┐
-                  │   Integration Agent    │
-                  │ (Wires ViewModel ➔ API)│
-                  │ (use{Screen}Screen.ts) │
-                  └────────────────────────┘
+```mermaid
+flowchart TD
+    P["Parent Agent"] --> U["🎨 UI Agent<br/><i>Figma → UI</i><br/>Pure View"]
+    P --> A["🔌 API Agent<br/><i>Swagger → Hooks/Types</i>"]
+    U -->|UI Handoff| I["🔄 Integration Agent<br/><i>Wires ViewModel → API</i><br/>use{Screen}Screen.ts"]
+    A -->|API Handoff| I
 ```
 
-| Responsibility | UI Agent | API Agent | Integration Agent | Security Agent |
-|---|:---:|:---:|:---:|:---:|
-| Figma / Layout Parsing | ✅ **Owner** | ❌ | ❌ | ❌ |
-| Gluestack & Tokens | ✅ **Owner** | ❌ | ❌ | ❌ |
-| Screen-local ViewModels | ✅ **Owner** | ❌ | ❌ | ❌ |
-| Swagger Discovery & Queries | ❌ | ✅ **Owner** | ❌ | ❌ |
-| `use{Screen}Screen.ts` Hook | ❌ | ❌ | ✅ **Owner** | ❌ |
-| DTO-to-ViewModel Mappers | ❌ | ❌ | ✅ **Owner** | ❌ |
-| Native SDK Wrappers | ❌ | ❌ | ✅ **Owner** | ❌ |
-| Security Audits & Remediation | ❌ | ❌ | ❌ | ✅ **Owner** |
+| Responsibility                |   UI Agent   |  API Agent   | Integration Agent | Security Agent |
+| ----------------------------- | :----------: | :----------: | :---------------: | :------------: |
+| Figma / Layout Parsing        | ✅ **Owner** |      ❌      |        ❌         |       ❌       |
+| Gluestack & Tokens            | ✅ **Owner** |      ❌      |        ❌         |       ❌       |
+| Screen-local ViewModels       | ✅ **Owner** |      ❌      |        ❌         |       ❌       |
+| Swagger Discovery & Queries   |      ❌      | ✅ **Owner** |        ❌         |       ❌       |
+| `use{Screen}Screen.ts` Hook   |      ❌      |      ❌      |   ✅ **Owner**    |       ❌       |
+| DTO-to-ViewModel Mappers      |      ❌      |      ❌      |   ✅ **Owner**    |       ❌       |
+| Native SDK Wrappers           |      ❌      |      ❌      |   ✅ **Owner**    |       ❌       |
+| Security Audits & Remediation |      ❌      |      ❌      |        ❌         |  ✅ **Owner**  |
 
 ---
 
 ## 🚀 Quick Start & CLI Tools
 
 ### 1. Validate Integration Boundaries
+
 Scan files to ensure components do not contain direct network calls or unhandled error states:
 
 ```bash
@@ -104,6 +105,7 @@ node agents/integration-agent/integration-agent.js validate ./src/services
 ```
 
 ### 2. Scaffold Screen Hook
+
 Generate a clean coordinator hook skeleton:
 
 ```bash
@@ -114,65 +116,84 @@ node agents/integration-agent/integration-agent.js scaffold hook PlayerProfile -
 
 ## 🛡️ Core Rules & Invariants
 
+#### Boundaries
+
 1. **Pure Presentation Remains Pure**: Screen `.tsx` components MUST NOT make direct API calls or define raw query hooks; they must consume state through `use{Screen}Screen()`.
+2. **No Direct `fetch` / `axios`**: Always consume TanStack Query hooks exported from `'hooks'`.
+3. **Isolated Native Wrappers**: Native SDKs (Firebase, Push, Keychain) must be wrapped in `src/services/` singleton modules, never called directly in UI components.
+
+#### Hooks & Mapping
+
 2. **Dedicated Coordinator Hook**: Every screen consuming dynamic data MUST have a corresponding `use{Screen}Screen.ts` hook.
 3. **Deterministic Mappers**: All API DTO-to-ViewModel transformations must live in pure mapper functions (`src/utils/{screen}Mapper.ts`) with safe fallbacks (`?? ''`).
+
+#### State & Lifecycle
+
 4. **Complete State Coverage**: Every hook must explicitly map and expose `isLoading`, `isError`, `isRefreshing`, and `isEmpty` states with retry handlers.
 5. **Pagination & Refresh Lifecycle**: Bind infinite scroll with `fetchNextPage()` on `onEndReached` and pull-to-refresh with `refetch()` on `onRefresh`.
-6. **Isolated Native Wrappers**: Native SDKs (Firebase, Push, Keychain) must be wrapped in `src/services/` singleton modules, never called directly in UI components.
-7. **No Direct `fetch` / `axios`**: Always consume TanStack Query hooks exported from `'hooks'`.
+
+#### Quality Gate
+
 8. **TypeScript Compiler Convergence**: Zero type discrepancies between API response types and screen ViewModel contracts (`npx tsc --noEmit`).
 
 ---
 
 ## 💡 Real-World Example & Walkthrough
 
+<details>
+<summary>Scenario: Connecting PlayerProfileScreen to Player Queries — click to expand</summary>
 
-### Scenario: Connecting PlayerProfileScreen to Player Queries
+### Step 1: User Input
 
-#### Step 1: User Input
 ```markdown
-Task: "Connect PlayerProfileScreen to usePlayerProfileQuery and usePlayerMatchesInfiniteQuery. 
+Task: "Connect PlayerProfileScreen to usePlayerProfileQuery and usePlayerMatchesInfiniteQuery.
 Handle pull-to-refresh, infinite scroll, and empty states."
 ```
 
-#### Step 2: Integration Agent Workflow
+### Step 2: Integration Agent Workflow
+
 1. Inspects `src/screens/Main/PlayerProfileScreen/types.ts` for expected `PlayerProfileProps`.
 2. Inspects `src/hooks/queries/usePlayerProfileQuery.ts` and `src/hooks/queries/usePlayerMatchesInfiniteQuery.ts`.
 3. Creates `src/utils/playerProfileMapper.ts` to transform server DTOs into the UI view model:
+
    ```typescript
-   import type { PlayerProfileResponse, PlayerMatchItem } from 'types';
-   import type { PlayerProfileViewModel } from '../screens/Main/PlayerProfileScreen/types';
+   import type { PlayerProfileResponse, PlayerMatchItem } from "types";
+   import type { PlayerProfileViewModel } from "../screens/Main/PlayerProfileScreen/types";
 
    export function mapPlayerProfileToViewModel(
      dto?: PlayerProfileResponse,
-     matches?: PlayerMatchItem[]
+     matches?: PlayerMatchItem[],
    ): PlayerProfileViewModel {
      return {
        player: {
-         id: dto?.id ?? '',
-         name: dto?.username ?? '',
-         avatarUrl: dto?.avatarUrl ?? '',
-         rank: dto?.rank ?? 'Rookie',
+         id: dto?.id ?? "",
+         name: dto?.username ?? "",
+         avatarUrl: dto?.avatarUrl ?? "",
+         rank: dto?.rank ?? "Rookie",
        },
        stats: {
-         winRate: dto?.stats ? `${(dto.stats.winRate * 100).toFixed(1)}%` : '0%',
+         winRate: dto?.stats
+           ? `${(dto.stats.winRate * 100).toFixed(1)}%`
+           : "0%",
          totalGames: dto?.stats?.totalGames ?? 0,
          mvpCount: dto?.stats?.mvpCount ?? 0,
        },
-       recentMatches: matches?.map(m => ({
-         id: m.id,
-         opponent: m.opponentName,
-         score: `${m.teamScore} - ${m.opponentScore}`,
-         isWin: m.isWin,
-       })) ?? [],
+       recentMatches:
+         matches?.map((m) => ({
+           id: m.id,
+           opponent: m.opponentName,
+           score: `${m.teamScore} - ${m.opponentScore}`,
+           isWin: m.isWin,
+         })) ?? [],
      };
    }
    ```
+
 4. Implements `src/screens/Main/PlayerProfileScreen/usePlayerProfileScreen.ts`:
+
    ```typescript
-   import { usePlayerProfileQuery, usePlayerMatchesInfiniteQuery } from 'hooks';
-   import { mapPlayerProfileToViewModel } from 'utils/playerProfileMapper';
+   import { usePlayerProfileQuery, usePlayerMatchesInfiniteQuery } from "hooks";
+   import { mapPlayerProfileToViewModel } from "utils/playerProfileMapper";
 
    export function usePlayerProfileScreen(playerId: string) {
      const profileQuery = usePlayerProfileQuery({ playerId });
@@ -180,7 +201,7 @@ Handle pull-to-refresh, infinite scroll, and empty states."
 
      const viewModel = mapPlayerProfileToViewModel(
        profileQuery.data,
-       matchesQuery.data?.pages.flatMap(p => p.items)
+       matchesQuery.data?.pages.flatMap((p) => p.items),
      );
 
      return {
@@ -200,10 +221,12 @@ Handle pull-to-refresh, infinite scroll, and empty states."
      };
    }
    ```
+
 5. Executes `npx tsc --noEmit` to verify type safety across both layers.
 
-#### Step 3: Generated Integration Handoff Contract
-```markdown
+### Step 3: Generated Integration Handoff Contract
+
+```yaml
 ## Integration Handoff
 status: completed
 screen: PlayerProfileScreen
@@ -217,6 +240,8 @@ wiredMutations: []
 nativeModules: none
 notes: "DTO mapped cleanly to ViewModel. Infinite list and pull-to-refresh fully wired."
 ```
+
+</details>
 
 ---
 
