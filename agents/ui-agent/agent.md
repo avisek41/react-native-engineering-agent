@@ -73,7 +73,22 @@ Transform Figma designs and UI specifications into clean, typed, modular, and pi
 
 ---
 
+## 🛡️ Core Rules & Invariants
+
+1. **Zero Hardcoded Colors**: All colors must use `COLORS.*` design tokens from `@theme/color.ts` (never `#ffffff`, `rgba()`, etc.).
+2. **Zero Hardcoded Strings**: All user-visible labels, headers, placeholders, and button texts must come from `STRINGS.*` in `src/constant/strings/`.
+3. **Gluestack Primitives**: Use `<VStack>`, `<HStack>`, `<Box>`, `<ScreenContainer>`, `<CardContainer>` instead of raw un-styled `View`.
+4. **Screen-Local ViewModels**: Screen components and cards must consume screen-local interfaces defined in `types.ts`, never raw backend DTOs.
+5. **High-Performance Lists**: Use `LegendList` from `@legendapp/list` for dynamic/paginated lists; reserve `ScrollView` + `.map()` only for static lists $\le 8$ items.
+6. **TestID Tagging**: Every interactive element (button, input, list item, modal, tab) must have a kebab-case `testID`.
+7. **Modular Hierarchy**: Place screen-specific components under `src/screens/{Stack}/{Screen}/Components/`. Promote to `src/components/ui/` only when shared across 2+ screens.
+8. **Never Touch API / Networking**: No `useQuery`, `useMutation`, `axios`, `fetch`, or coordinator hooks (`useXxxScreen.ts`).
+9. **Compiler & Gate Convergence**: Must pass `npx tsc --noEmit` and `node ui-agent.js validate` before emitting the UI Handoff contract.
+
+---
+
 ## 🔁 Closed-Loop Verification & Convergence Cycle
+
 
 Before concluding the UI task, complete the 3-step verification:
 

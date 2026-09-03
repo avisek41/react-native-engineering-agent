@@ -247,7 +247,21 @@ npm run security:agent:interactive
 
 ---
 
+## 🛡️ Core Rules & Invariants
+
+1. **Zero Hardcoded Secrets**: No API keys, JWT secrets, AWS tokens, private keys, or passwords embedded in source code (extract to secure config).
+2. **Encrypted Auth Storage**: Auth tokens, refresh tokens, biometric keys, and PII must strictly use `react-native-keychain` or encrypted storage (never plain `AsyncStorage` / `MMKV`).
+3. **Enforced HTTPS / TLS**: All API client endpoints, WebViews, and image resources must use `https://` (no plaintext `http://`).
+4. **Guarded Deep Links**: All deep links routing to sensitive screens must sanitize input parameters and verify session auth guards before dispatching navigation.
+5. **Restricted WebViews**: WebViews must enforce origin domain whitelisting, sanitize `onMessage` payloads, and block direct `eval()` or unconstrained JavaScript bridges.
+6. **Screen Capture Protection**: Payment, checkout, KYC, and biometric screens must enable screenshot and screen-recording prevention.
+7. **Safe Auto-Fix with Rollback**: Automated fixes (`--fix`) are only applied if deterministic and must automatically roll back if TypeScript compilation fails.
+8. **OWASP MASVS Mapping**: Every vulnerability finding must be categorized and linked to standard MASVS controls (Storage, Network, Auth, Cryptography).
+
+---
+
 ## 💡 Real-World Example & Walkthrough
+
 
 ### Scenario: Auditing Auth Services & Deep Links
 

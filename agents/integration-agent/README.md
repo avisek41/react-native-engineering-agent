@@ -112,7 +112,21 @@ node agents/integration-agent/integration-agent.js scaffold hook PlayerProfile -
 
 ---
 
+## 🛡️ Core Rules & Invariants
+
+1. **Pure Presentation Remains Pure**: Screen `.tsx` components MUST NOT make direct API calls or define raw query hooks; they must consume state through `use{Screen}Screen()`.
+2. **Dedicated Coordinator Hook**: Every screen consuming dynamic data MUST have a corresponding `use{Screen}Screen.ts` hook.
+3. **Deterministic Mappers**: All API DTO-to-ViewModel transformations must live in pure mapper functions (`src/utils/{screen}Mapper.ts`) with safe fallbacks (`?? ''`).
+4. **Complete State Coverage**: Every hook must explicitly map and expose `isLoading`, `isError`, `isRefreshing`, and `isEmpty` states with retry handlers.
+5. **Pagination & Refresh Lifecycle**: Bind infinite scroll with `fetchNextPage()` on `onEndReached` and pull-to-refresh with `refetch()` on `onRefresh`.
+6. **Isolated Native Wrappers**: Native SDKs (Firebase, Push, Keychain) must be wrapped in `src/services/` singleton modules, never called directly in UI components.
+7. **No Direct `fetch` / `axios`**: Always consume TanStack Query hooks exported from `'hooks'`.
+8. **TypeScript Compiler Convergence**: Zero type discrepancies between API response types and screen ViewModel contracts (`npx tsc --noEmit`).
+
+---
+
 ## 💡 Real-World Example & Walkthrough
+
 
 ### Scenario: Connecting PlayerProfileScreen to Player Queries
 
