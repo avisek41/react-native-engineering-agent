@@ -1,40 +1,24 @@
 # React Native Agents
 
-A collection of specialized AI engineering agents for React Native application development.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Made for React Native](https://img.shields.io/badge/made%20for-React%20Native-61DAFB.svg?logo=react)](https://reactnative.dev)
+[![Closed-Loop Engineering](https://img.shields.io/badge/architecture-closed--loop-6f42c1.svg)](#-closed-loop-engineering-base)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-## Agents
+> A collection of specialized AI engineering agents that take a React Native feature from design to production-ready code — each one verifying its own output before handing off to the next.
 
-| Agent | Use For | Path |
-|---|---|---|
-| **UI Agent** | Screens, components, layouts, design tokens, Figma translation | `agents/ui-agent/` |
-| **API Agent** | OpenAPI/Swagger contracts, React Query hooks, mutations, API types | `agents/api-agent/` |
-| **Integration Agent** | Screen coordinator hooks, DTO mappers, native modules, SDKs | `agents/integration-agent/` |
-| **Security Agent** | OWASP MASVS compliance, secure storage, secret detection, audits | `agents/security-agent/` |
+Most AI coding agents generate code once and hope for the best. Every agent here runs an **in-loop validation cycle** — checking its own output against compiler gates, lint rules, and security analyzers — before it's allowed to declare a task complete. The result is a pipeline you can chain end-to-end, from Figma to a merged, audited pull request.
 
 ---
 
-## Which Agent Should I Use?
-
-- **UI & Layout work** → `agents/ui-agent/`
-- **Backend / API work** → `agents/api-agent/`
-- **Data-Wiring & Native SDKs** → `agents/integration-agent/`
-- **Security & Compliance work** → `agents/security-agent/`
-
-> If a task crosses multiple areas, use multiple agents in sequence (e.g., UI Agent → API Agent → Integration Agent). For details on picking the right agent, see [docs/agent-selection.md](docs/agent-selection.md).
-
----
-
-## How To Use
-
-### 1. Clone this repository
+## 🚀 Quick Start
 
 ```bash
 git clone https://github.com/avisek41/react-native-engineering-agent.git
+cd react-native-engineering-agent
 ```
 
-### 2. Open the agent you need
-
-Navigate to the agent directory:
+Open the agent directory you need and hand its `agent.md` (plus skills/rules) to your AI coding assistant, together with your React Native project:
 
 ```bash
 cd agents/ui-agent/           # for UI work
@@ -43,55 +27,57 @@ cd agents/integration-agent/  # for data wiring & native modules
 cd agents/security-agent/     # for security & audits
 ```
 
-### 3. Provide to your AI coding assistant
+---
 
-Provide the agent instructions (`agent.md`), skills, or rules to your AI coding assistant together with your React Native project.
+## Which Agent Should I Use?
+
+| Agent                    | Use For                                                            | When to Reach For It                                          | Path                        |
+| ------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------- | --------------------------- |
+| 🎨 **UI Agent**          | Screens, components, layouts, design tokens, Figma translation     | Starting a new screen or component from a design              | `agents/ui-agent/`          |
+| 🔌 **API Agent**         | OpenAPI/Swagger contracts, React Query hooks, mutations, API types | Wiring a screen to a backend endpoint                         | `agents/api-agent/`         |
+| 🔄 **Integration Agent** | Screen coordinator hooks, DTO mappers, native modules, SDKs        | Connecting UI + API together, or adding a native SDK          | `agents/integration-agent/` |
+| 🛡️ **Security Agent**    | OWASP MASVS compliance, secure storage, secret detection, audits   | Before merge, on a cron schedule, or during a security review | `agents/security-agent/`    |
+
+> If a task crosses multiple areas, chain the agents in sequence (e.g., UI Agent → API Agent → Integration Agent). See [docs/agent-selection.md](docs/agent-selection.md) for details.
 
 ---
 
 ## Example Workflow
 
-**Task:** *"Create a new profile screen and connect it to the profile API."*
+**Task:** _"Create a new profile screen and connect it to the profile API."_
 
-1. **Step 1 — UI Agent**: Scaffold and implement the presentational UI screen from designs. The UI Agent emits a `UI Handoff` contract.
-2. **Step 2 — API Agent**: Inspect OpenAPI specs, discover existing services, generate TanStack Query hooks, and emit an `API Handoff` contract.
-3. **Step 3 — Integration Agent**: Generate the screen coordinator hook (`useProfileScreen.ts`) and DTO mapper to wire queries to the UI view model.
+1. **UI Agent** — scaffolds and implements the presentational screen from designs, emits a `UI Handoff` contract.
+2. **API Agent** — inspects OpenAPI specs, discovers existing services, generates TanStack Query hooks, emits an `API Handoff` contract.
+3. **Integration Agent** — generates the screen coordinator hook (`useProfileScreen.ts`) and DTO mapper to wire queries to the UI view model.
 
+---
 
 ## 🔁 Closed-Loop Engineering Base
 
-Every agent in this repository is architected around **Closed-Loop Engineering** principles. Rather than generating unverified code or relying solely on single-shot completions, each agent executes an in-loop validation cycle that iteratively verifies code against compiler gates, strict lint rules, and security analyzers before declaring a task complete:
+Every agent is architected around **Closed-Loop Engineering**: rather than generating unverified code from a single pass, each one iterates against compiler gates, strict lint rules, and security analyzers until it converges — then hands off a typed contract to the next agent in the chain.
 
-```
-┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐       ┌─────────────────┐
-│ 1. UI Agent     │ ────▶ │ 2. API Agent    │ ────▶ │ 3. Integration  │ ────▶ │ 4. Security     │
-│ (Figma ➔ UI)    │       │ (OpenAPI ➔      │       │    Agent        │       │    Agent        │
-│                 │       │  Queries/Types) │       │ (Wires UI ➔     │       │ (Audits &       │
-│  Closed-Loop:   │       │  Closed-Loop:   │       │  API + Native)  │       │  Auto-Fixes     │
-│  Tokens + TSC   │       │  Swagger + TSC  │       │  Closed-Loop:   │       │  with Rollback) │
-│  Convergence    │       │  Convergence    │       │  States + TSC   │       │  Zero Regress.  │
-└────────┬────────┘       └────────┬────────┘       └────────┬────────┘       └────────┬────────┘
-         │ (UI Handoff)            │ (API Handoff)           │ (Integ. Handoff)        │
-         └─────────────────────────┴─────────────────────────┴─────────────────────────┘
-                                                                           ▼
-                                                                Production Ready Code
+```mermaid
+flowchart LR
+    A["🎨 UI Agent<br/>Figma → UI<br/><i>Tokens + TSC Convergence</i>"] -->|UI Handoff| B["🔌 API Agent<br/>OpenAPI → Queries/Types<br/><i>Swagger + TSC Convergence</i>"]
+    B -->|API Handoff| C["🔄 Integration Agent<br/>Wires UI + API + Native<br/><i>States + TSC Convergence</i>"]
+    C -->|Integration Handoff| D["🛡️ Security Agent<br/>Audits & Auto-Fixes<br/><i>Zero Regressions, Rollback-Safe</i>"]
+    D --> E([Production-Ready Code])
 ```
 
 ### In-Loop Verification Gates per Agent
 
-| Agent | In-Loop Self-Verification Checks | Closed-Loop Gate |
-|---|---|---|
-| **🎨 UI Agent** | • Zero hardcoded hex colors / magic strings (`COLORS.*`, `STRINGS.*`)<br>• Gluestack primitive enforcement & responsive layout checks<br>• Local ViewModel contract validation | `npx tsc --noEmit`<br>`node ui-agent.js validate` |
-| **🔌 API Agent** | • 100% parameter and response schema match with Swagger/OpenAPI<br>• Zero-import pure TypeScript interfaces (`src/types/*.types.ts`)<br>• Re-export verification in `types/index.ts` and `hooks/index.ts` | `npx tsc --noEmit`<br>`node api-agent.js validate` |
-| **🔄 Integration Agent** | • Zero direct HTTP/API calls inside JSX components<br>• Complete state mapping: `isLoading`, `isError`, `isRefreshing`, `isEmpty`<br>• Pagination & pull-to-refresh lifecycle verification | `npx tsc --noEmit`<br>`node integration-agent.js validate` |
-| **🛡️ Security Agent** | • Static multi-level analysis (root, folder, file) across 8 domain packs<br>• Heuristic false-positive suppression (skips comments, test mocks, `__DEV__`)<br>• Safe auto-remediation with automatic rollback on compile failure | `security-agent.js`<br>`security-agent-ai.js --fix` |
+| Agent                    | In-Loop Self-Verification Checks                                                                                                                                                                                         | Closed-Loop Gate                                           |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| 🎨 **UI Agent**          | Zero hardcoded hex colors / magic strings (`COLORS.*`, `STRINGS.*`) · Gluestack primitive enforcement & responsive layout checks · Local ViewModel contract validation                                                   | `npx tsc --noEmit`<br>`node ui-agent.js validate`          |
+| 🔌 **API Agent**         | 100% parameter/response schema match with Swagger/OpenAPI · Zero-import pure TypeScript interfaces (`src/types/*.types.ts`) · Re-export verification in `types/index.ts` and `hooks/index.ts`                            | `npx tsc --noEmit`<br>`node api-agent.js validate`         |
+| 🔄 **Integration Agent** | Zero direct HTTP/API calls inside JSX components · Complete state mapping: `isLoading`, `isError`, `isRefreshing`, `isEmpty` · Pagination & pull-to-refresh lifecycle verification                                       | `npx tsc --noEmit`<br>`node integration-agent.js validate` |
+| 🛡️ **Security Agent**    | Static multi-level analysis (root, folder, file) across 8 domain packs · Heuristic false-positive suppression (skips comments, test mocks, `__DEV__`) · Safe auto-remediation with automatic rollback on compile failure | `security-agent.js`<br>`security-agent-ai.js --fix`        |
 
 ---
 
 ## Supported AI Coding Agents
 
-
-These agents are designed to work seamlessly with:
+Designed to work seamlessly with:
 
 - **Antigravity**
 - **Cursor**
@@ -99,7 +85,7 @@ These agents are designed to work seamlessly with:
 - **GitHub Copilot**
 - **Codex / LLM CLI Tools**
 
-The agent instructions are intentionally modular and tool-agnostic.
+Agent instructions are intentionally modular and tool-agnostic.
 
 ---
 
@@ -125,8 +111,16 @@ react-native-agents/
     └── usage.md              # Multi-agent workflows & IDE setups
 ```
 
-
 Each agent contains its own instructions, skills, prompts, and supporting CLI tools.
+
+---
+
+## Roadmap
+
+- [ ] AST-based static analysis for the Security Agent (Semgrep evaluation in progress)
+- [ ] Versioned JSON schema output across all report generators
+- [ ] Universal report generation usable across any project, not just React Native
+- [ ] Expanded native SDK coverage for the Integration Agent
 
 ---
 
