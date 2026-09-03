@@ -1,12 +1,27 @@
-# Universal App Security Scanner v3
+# Universal App Security Scanner v3 🛡️
 
-> **Architecture Philosophy**: Built on **Closed-Loop Engineering** principles. Features a deterministic 4-phase audit cycle (Detect ➔ Analyze ➔ Triage ➔ Remediate) with automated safe fixes and compile-check rollback to eliminate regression risks.
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
+[![OWASP MASVS](https://img.shields.io/badge/OWASP-MASVS-red.svg)](#compliance)
+[![SARIF](https://img.shields.io/badge/output-SARIF-blueviolet.svg)](#report-formats)
+[![Closed-Loop Engineering](https://img.shields.io/badge/architecture-closed--loop-6f42c1.svg)](#architecture-philosophy)
 
-A config-driven, enterprise-grade static security analyzer for React Native (and
+> Part of the [React Native Agents](../../README.md) suite — pairs with the UI, API, and Integration agents.
 
-JS/TS) apps. Scans at **three distinct levels** — root, folder, and file — each
-with the right rule set for that scope. Produces reports in HTML, Markdown, JSON,
-and SARIF.
+**Zero-dependency static security scanning with deterministic auto-fix and rollback.**
+
+### Architecture Philosophy
+
+> Built on **Closed-Loop Engineering** principles. Features a deterministic 4-phase audit cycle (Detect ➔ Analyze ➔ Triage ➔ Remediate) with automated safe fixes and compile-check rollback to eliminate regression risks.
+
+```mermaid
+flowchart LR
+    D["🔍 Detect<br/><i>Core + domain rule packs</i>"] --> An["🧠 Analyze<br/><i>Context + FP heuristics</i>"]
+    An --> T["📊 Triage<br/><i>Priority scoring 0-100</i>"]
+    T --> R["🔧 Remediate<br/><i>Safe auto-fix + rollback</i>"]
+    R -.->|compile check fails| D
+```
+
+A config-driven, enterprise-grade static security analyzer for React Native (and JS/TS) apps. Scans at **three distinct levels** — root, folder, and file — each with the right rule set for that scope. Produces reports in HTML, Markdown, JSON, and SARIF.
 
 ## Quick Start
 
@@ -48,6 +63,7 @@ See `security-agent.config.example.json` for all supported fields.
 ### App Name Resolution
 
 The scanner resolves the app name in this priority order:
+
 1. `--app-name` CLI flag
 2. `appName` in `security-agent.config.json`
 3. `name` field in the target project's `package.json`
@@ -55,11 +71,11 @@ The scanner resolves the app name in this priority order:
 
 ## Scan Modes (auto-detected — no flag needed)
 
-| Mode | Triggered by | What runs |
-|---|---|---|
-| **root** | `.`, `./src`, or any dir with a `package.json` | All core per-file rules + **every** domain's per-file rules + **all** platform-wide inverse checks + each domain's own inverse checks + dependency/npm audit |
-| **folder** | A recognized feature folder (`services`, `navigation`, `screens`, `components`, `store`, `api`, `context`, `configs`, etc.) | Core per-file rules + that folder's **domain-specific rule pack** + that domain's own inverse checks only. Platform-wide checks are **not** run. |
-| **file** | A single file path | Core per-file rules + the domain pack inferred from the parent folder. **No** inverse checks. |
+| Mode       | Triggered by                                                                                                                | What runs                                                                                                                                                    |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **root**   | `.`, `./src`, or any dir with a `package.json`                                                                              | All core per-file rules + **every** domain's per-file rules + **all** platform-wide inverse checks + each domain's own inverse checks + dependency/npm audit |
+| **folder** | A recognized feature folder (`services`, `navigation`, `screens`, `components`, `store`, `api`, `context`, `configs`, etc.) | Core per-file rules + that folder's **domain-specific rule pack** + that domain's own inverse checks only. Platform-wide checks are **not** run.             |
+| **file**   | A single file path                                                                                                          | Core per-file rules + the domain pack inferred from the parent folder. **No** inverse checks.                                                                |
 
 Override with `--scope=root|folder|file` if auto-detection guesses wrong.
 
@@ -160,14 +176,17 @@ Each finding will include `complianceRefs` (e.g. `["OWASP-MASVS MASVS-STORAGE-1"
 
 ## Report Formats
 
-| Format | Extension | Use Case |
-|--------|-----------|----------|
-| HTML | `.html` | Human review, stakeholder sharing, executive summary |
-| Markdown | `.md` | PR comments, documentation |
-| JSON | `.json` | CI pipelines, dashboard ingestion, baseline diffing |
-| SARIF | `.sarif` | GitHub Code Scanning, enterprise security dashboards |
+| Format   | Extension | Use Case                                             |
+| -------- | --------- | ---------------------------------------------------- |
+| HTML     | `.html`   | Human review, stakeholder sharing, executive summary |
+| Markdown | `.md`     | PR comments, documentation                           |
+| JSON     | `.json`   | CI pipelines, dashboard ingestion, baseline diffing  |
+| SARIF    | `.sarif`  | GitHub Code Scanning, enterprise security dashboards |
 
 ## File Layout
+
+<details>
+<summary>Click to expand full file layout</summary>
 
 ```
 security-agent/
@@ -186,6 +205,8 @@ security-agent/
 │   ├── deps.js            # npm audit / known-issue dependency check (root scope only)
 │   └── report.js          # HTML / Markdown / JSON / SARIF report generators
 ```
+
+</details>
 
 ## Extending
 
@@ -216,18 +237,18 @@ fix suggestions — all without an LLM, API key, or network access.
 
 ### How It Differs from the Scanner
 
-| Feature | Scanner (`security-agent.js`) | Agent (`security-agent-ai.js`) |
-|---------|------|-------|
-| Detection | Regex pattern matching | Same (reuses scanner) |
-| Context | Line-level | ±15 lines + imports + file purpose |
-| False positives | Reports everything | 8 heuristics to flag likely FPs |
-| Explanations | Generic rule name | Plain-English impact explanation |
-| Fix suggestions | Text recommendation | Before/after code diffs |
-| Priority | Severity label only | Composite score (0-100) |
-| Correlation | None | Cross-finding relationship detection |
-| Auto-fix | None | Safe deterministic fixes with rollback |
-| Interactive | None | Walk-through review mode |
-| Dependencies | None | None (zero new dependencies) |
+| Feature         | Scanner (`security-agent.js`) | Agent (`security-agent-ai.js`)         |
+| --------------- | ----------------------------- | -------------------------------------- |
+| Detection       | Regex pattern matching        | Same (reuses scanner)                  |
+| Context         | Line-level                    | ±15 lines + imports + file purpose     |
+| False positives | Reports everything            | 8 heuristics to flag likely FPs        |
+| Explanations    | Generic rule name             | Plain-English impact explanation       |
+| Fix suggestions | Text recommendation           | Before/after code diffs                |
+| Priority        | Severity label only           | Composite score (0-100)                |
+| Correlation     | None                          | Cross-finding relationship detection   |
+| Auto-fix        | None                          | Safe deterministic fixes with rollback |
+| Interactive     | None                          | Walk-through review mode               |
+| Dependencies    | None                          | None (zero new dependencies)           |
 
 ### Quick Start
 
@@ -249,11 +270,19 @@ npm run security:agent:interactive
 
 ## 🛡️ Core Rules & Invariants
 
+#### Secrets & Storage
+
 1. **Zero Hardcoded Secrets**: No API keys, JWT secrets, AWS tokens, private keys, or passwords embedded in source code (extract to secure config).
 2. **Encrypted Auth Storage**: Auth tokens, refresh tokens, biometric keys, and PII must strictly use `react-native-keychain` or encrypted storage (never plain `AsyncStorage` / `MMKV`).
+
+#### Network & Navigation
+
 3. **Enforced HTTPS / TLS**: All API client endpoints, WebViews, and image resources must use `https://` (no plaintext `http://`).
 4. **Guarded Deep Links**: All deep links routing to sensitive screens must sanitize input parameters and verify session auth guards before dispatching navigation.
 5. **Restricted WebViews**: WebViews must enforce origin domain whitelisting, sanitize `onMessage` payloads, and block direct `eval()` or unconstrained JavaScript bridges.
+
+#### Screen & Remediation
+
 6. **Screen Capture Protection**: Payment, checkout, KYC, and biometric screens must enable screenshot and screen-recording prevention.
 7. **Safe Auto-Fix with Rollback**: Automated fixes (`--fix`) are only applied if deterministic and must automatically roll back if TypeScript compilation fails.
 8. **OWASP MASVS Mapping**: Every vulnerability finding must be categorized and linked to standard MASVS controls (Storage, Network, Auth, Cryptography).
@@ -262,16 +291,18 @@ npm run security:agent:interactive
 
 ## 💡 Real-World Example & Walkthrough
 
+<details>
+<summary>Scenario: Auditing Auth Services & Deep Links — click to expand</summary>
 
-### Scenario: Auditing Auth Services & Deep Links
+### Step 1: User Input / CI Trigger
 
-#### Step 1: User Input / CI Trigger
 ```markdown
 Command: node agents/security-agent/security-agent-ai.js ./src/services ./src/navigation
 Requirement: "Check for unencrypted token storage, plain-text network URLs, and unguarded deep links."
 ```
 
-#### Step 2: Agent Execution & Triage
+### Step 2: Agent Execution & Triage
+
 1. Evaluates all universal core rules and navigation/services domain rules.
 2. Identifies vulnerabilities:
    - **SEC-002 (Critical):** `AsyncStorage.setItem('access_token', token)` in `authService.ts`.
@@ -280,8 +311,9 @@ Requirement: "Check for unencrypted token storage, plain-text network URLs, and 
 3. Filters false positives (e.g. non-sensitive storage keys like `theme_preference` or test mock tokens).
 4. Generates HTML & Markdown triage report.
 
-#### Step 3: Automated Fix & Handoff Contract
-```markdown
+### Step 3: Automated Fix & Handoff Contract
+
+```yaml
 ## Security Handoff
 status: remediated
 targetScanned: src/services, src/navigation
@@ -299,8 +331,14 @@ complianceFrameworks:
 notes: "All high/critical items resolved. Passed regression scan."
 ```
 
+</details>
+
 ---
 
+## 📖 Agent Mode Reference
+
+<details>
+<summary>CLI usage, priority scoring, false-positive heuristics, auto-fix rules, limitations & JSON schema — click to expand</summary>
 
 ### CLI Usage
 
@@ -310,13 +348,13 @@ node security-agent/security-agent-ai.js [target...] [options]
 
 **Modes:**
 
-| Flag | Description |
-|------|-------------|
-| *(default)* | Full 4-phase pipeline: Detect → Analyze → Triage → Report |
-| `--quick` | Focus on critical/high-severity, high-confidence findings |
-| `--fix` | Apply safe automatic fixes (deterministic, validated, rollback on failure) |
-| `--interactive` | Walk through findings one-by-one with fix/skip/suppress/quit |
-| `--format=md\|json` | Output format (default: md) |
+| Flag                | Description                                                                |
+| ------------------- | -------------------------------------------------------------------------- |
+| _(default)_         | Full 4-phase pipeline: Detect → Analyze → Triage → Report                  |
+| `--quick`           | Focus on critical/high-severity, high-confidence findings                  |
+| `--fix`             | Apply safe automatic fixes (deterministic, validated, rollback on failure) |
+| `--interactive`     | Walk through findings one-by-one with fix/skip/suppress/quit               |
+| `--format=md\|json` | Output format (default: md)                                                |
 
 **All existing scanner flags are also supported** (`--app-name`, `--scope`, `--fail-on`, etc.).
 
@@ -330,12 +368,12 @@ priority = severity × exploitability × reachability × impact × correlation
 
 **Priority buckets:**
 
-| Bucket | Score | Meaning |
-|--------|-------|---------|
-| 🔥 Fix Immediately | ≥ 80 | Exploitable, production-reachable, high impact |
-| ⚡ Fix This Sprint | 50-79 | Real issue, moderate exposure |
-| 📋 Backlog | 20-49 | Defense-in-depth, best practice |
-| ℹ️  Informational | < 20 | Awareness only |
+| Bucket             | Score | Meaning                                        |
+| ------------------ | ----- | ---------------------------------------------- |
+| 🔥 Fix Immediately | ≥ 80  | Exploitable, production-reachable, high impact |
+| ⚡ Fix This Sprint | 50-79 | Real issue, moderate exposure                  |
+| 📋 Backlog         | 20-49 | Defense-in-depth, best practice                |
+| ℹ️ Informational   | < 20  | Awareness only                                 |
 
 > **Note:** Priority scores are heuristic-based and help focus remediation effort.
 > They are not proven security metrics.
@@ -390,10 +428,20 @@ Produces a JSON report with schema:
 {
   "version": "1.0.0",
   "scan": { "appName": "", "scope": {}, "timestamp": "", "filesScanned": 0 },
-  "summary": { "total": 0, "confirmed": 0, "likely": 0, "uncertain": 0, "likelyFalsePositives": 0, "bySeverity": {} },
+  "summary": {
+    "total": 0,
+    "confirmed": 0,
+    "likely": 0,
+    "uncertain": 0,
+    "likelyFalsePositives": 0,
+    "bySeverity": {}
+  },
   "priority": { "distribution": {}, "topActions": [] },
-  "findings": [{ "rule": "", "severity": "", "context": {}, "priority": {}, "fix": {} }],
+  "findings": [
+    { "rule": "", "severity": "", "context": {}, "priority": {}, "fix": {} }
+  ],
   "fixes": { "autoFixable": [], "manualOnly": [] }
 }
 ```
 
+</details>
