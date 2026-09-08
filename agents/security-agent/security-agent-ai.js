@@ -28,6 +28,7 @@ const {
 const { checkDependencies } = require('./lib/deps');
 const { FOLDER_DOMAINS, LOW_RISK_DOMAINS } = require('./lib/constants');
 const { filterBySeverity, generateStats } = require('./lib/report');
+const { scanNativeFiles } = require('./lib/rules-native');
 
 // ── New agent modules ────────────────────────────────────────────
 const { analyzeContext, buildRepositoryContext } = require('./lib/context-analyzer');
@@ -161,6 +162,15 @@ async function main() {
 
     if (!config.skipDeps && scope.mode === 'root') {
       checkDependencies(targetDir, findings, addFinding, isQuiet);
+    }
+
+    // Native platform file scanning (root mode only)
+    if (scope.mode === 'root') {
+      log('  ⏳ Scanning native platform files...');
+      const nativeResult = scanNativeFiles(targetDir, findings, addFinding, isQuiet);
+      if (nativeResult.filesScanned > 0) {
+        log(`  ✅ Scanned ${nativeResult.filesScanned} native file(s), found ${nativeResult.findingsCount} issue(s)`);
+      }
     }
 
     let processedFindings = applySuppressions(findings, config.suppressions);
@@ -476,6 +486,13 @@ async function applyAutoFixes(rankedFindings, targetDir, quiet) {
 
   log(`  🔧 Applying ${safeFixable.length} safe automatic fix(es)...`);
 
+  // Capture pre-fix TypeScript baseline before modifying any files
+  const preFixBaseline = runTypeScriptValidation(targetDir);
+  const baselineErrorCount = preFixBaseline.ran ? preFixBaseline.totalErrors : 0;
+  if (preFixBaseline.ran) {
+    log(`  📊 Pre-fix TypeScript baseline: ${baselineErrorCount} existing error(s)`);
+  }
+
   let applied = 0;
   let failed = 0;
   const skipped = [];
@@ -494,11 +511,11 @@ async function applyAutoFixes(rankedFindings, targetDir, quiet) {
     }
   }
 
-  // Optional TypeScript validation after all fixes
+  // Post-fix TypeScript validation with baseline comparison
   if (applied > 0) {
-    const tsResult = runTypeScriptValidation(targetDir);
-    if (tsResult.ran && tsResult.newErrors > 0) {
-      log(`  ⚠️  TypeScript validation found ${tsResult.newErrors} new error(s) after fixes.`);
+    const postFixResult = runTypeScriptValidation(targetDir, baselineErrorCount);
+    if (postFixResult.ran && postFixResult.newErrors > 0) {
+      log(`  ⚠️  TypeScript validation found ${postFixResult.newErrors} new error(s) after fixes (baseline: ${baselineErrorCount}, post-fix: ${postFixResult.totalErrors}).`);
       log('  🔄 Rolling back all fixes...');
 
       for (const f of appliedFixes) {
@@ -507,8 +524,18 @@ async function applyAutoFixes(rankedFindings, targetDir, quiet) {
 
       applied = 0;
       log('  ✅ All fixes rolled back. Repository is in original state.');
-    } else if (tsResult.ran) {
-      log('  ✅ TypeScript validation passed — no new errors introduced.');
+    } else if (postFixResult.ran) {
+      log(`  ✅ TypeScript validation passed — no new errors introduced (baseline: ${baselineErrorCount}, post-fix: ${postFixResult.totalErrors}).`);
+    }
+  }
+
+  // Clean up backup files for successfully applied fixes
+  if (applied > 0) {
+    for (const f of appliedFixes) {
+      const relFile = f.file;
+      if (!relFile || relFile.startsWith('(')) continue;
+      const backupPath = path.resolve(targetDir, relFile) + '.agent-backup';
+      try { if (fs.existsSync(backupPath)) fs.unlinkSync(backupPath); } catch { /* ignore */ }
     }
   }
 
@@ -721,13 +748,18 @@ function validateBalanced(content) {
  * Runs TypeScript validation using the project's existing tsc if available.
  * Does not install or download anything.
  *
- * Distinguishes:
- *  - pre-existing errors
- *  - errors introduced by fixes
- *  - successful validation
+ * When a baselineErrorCount is provided (from a pre-fix run), the function
+ * compares the post-fix error count against it. Only errors exceeding the
+ * baseline are counted as "new" — pre-existing TypeScript errors do not
+ * trigger a rollback.
+ *
+ * @param {string} targetDir - Project directory to validate
+ * @param {number} [baselineErrorCount=0] - Number of TypeScript errors before fixes were applied
+ * @returns {{ ran: boolean, preExistingErrors: number, newErrors: number, totalErrors: number }}
  */
-function runTypeScriptValidation(targetDir) {
-  const result = { ran: false, preExistingErrors: 0, newErrors: 0, totalErrors: 0 };
+function runTypeScriptValidation(targetDir, baselineErrorCount) {
+  const baseline = typeof baselineErrorCount === 'number' ? baselineErrorCount : 0;
+  const result = { ran: false, preExistingErrors: baseline, newErrors: 0, totalErrors: 0 };
 
   // Check if typescript exists in the project
   const tscPath = path.join(targetDir, 'node_modules', '.bin', 'tsc');
@@ -746,6 +778,7 @@ function runTypeScriptValidation(targetDir) {
     // Run tsc --noEmit and capture output
     execSync(`"${tsc}" --noEmit 2>&1`, { cwd, encoding: 'utf8', timeout: 60000 });
     result.ran = true;
+    result.totalErrors = 0;
     result.newErrors = 0;
   } catch (err) {
     result.ran = true;
@@ -754,12 +787,9 @@ function runTypeScriptValidation(targetDir) {
     const errorLines = output.split('\n').filter(l => /error TS\d+/.test(l));
     result.totalErrors = errorLines.length;
 
-    // Check if errors are in files we modified
-    // For now, assume any errors are potentially from our fixes
-    // A more sophisticated check would diff against pre-fix tsc output
-    const fixedFiles = new Set();
-    // We can't easily get the list of fixed files here, so be conservative
-    result.newErrors = result.totalErrors;
+    // Compare against baseline: only errors exceeding the baseline are "new"
+    result.newErrors = Math.max(0, result.totalErrors - baseline);
+    result.preExistingErrors = Math.min(baseline, result.totalErrors);
   }
 
   return result;

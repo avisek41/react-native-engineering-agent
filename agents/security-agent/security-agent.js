@@ -43,6 +43,7 @@ const {
   filterBySeverity, generateStats, getScoreGrade,
   generateHTMLReport, generateMarkdownReport, generateJSONReport, generateSARIFReport,
 } = require('./lib/report');
+const { scanNativeFiles } = require('./lib/rules-native');
 
 // ────────────────────────────────────────────────────────────────────
 // CLI Argument Parsing
@@ -275,6 +276,15 @@ for (let ti = 0; ti < targets.length; ti++) {
     checkDependencies(targetDir, findings, addFinding, config.quiet);
   } else if (!config.skipDeps && scope.mode !== 'root') {
     log('  ℹ️  Skipping dependency audit (only runs at root scope; use --scope=root or scan the project root for this).');
+  }
+
+  // 4b. Native platform file scanning (root mode only)
+  if (scope.mode === 'root') {
+    log('  ⏳ Scanning native platform files...');
+    const nativeResult = scanNativeFiles(targetDir, findings, addFinding, config.quiet);
+    if (nativeResult.filesScanned > 0) {
+      log(`  ✅ Scanned ${nativeResult.filesScanned} native file(s), found ${nativeResult.findingsCount} issue(s)`);
+    }
   }
 
   // 5. Apply suppressions
